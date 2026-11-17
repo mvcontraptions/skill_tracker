@@ -233,6 +233,9 @@ label.field{display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:
 .set-block p{margin:0;max-width:66ch;color:var(--ink-2);font-size:.9rem}
 .pct-last:empty{display:none}
 #draftRows{margin-top:0}
+.add-skill{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,15rem) auto;gap:.5rem;margin-top:1rem}
+.add-skill input,.add-skill select{width:100%;min-width:0}
+@media (max-width:640px){.add-skill{grid-template-columns:minmax(0,1fr) auto}.add-skill select{grid-column:1;grid-row:2}}
 .lp-skill{display:grid;grid-template-columns:minmax(0,1fr) 5rem auto;gap:.5rem;align-items:center}
 .lp-skill select{width:100%}
 @media (max-width:640px){
@@ -292,6 +295,8 @@ label.field{display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:
 <h2 id="levelsH">Current levels</h2>
 <div class="legend" id="legend"></div>
 <div class="rows" id="rows"></div>
+<div class="add-skill"><input type="text" id="skNew" placeholder="Add a skill" aria-label="New skill name"><select id="skLevel" aria-label="Your level in it"></select><button type="button" id="skAdd">Add</button></div>
+<p class="status" id="skStatus" role="status"></p>
 </section>
 <section aria-labelledby="rulesH">
 <h2 id="rulesH">How scoring works</h2>
@@ -1037,7 +1042,7 @@ document.querySelectorAll('.tabs [data-tab]').forEach(b=>{
     if(e.key==='ArrowRight'){e.preventDefault();showTab(vis[(j+1)%vis.length],true);}
     if(e.key==='ArrowLeft'){e.preventDefault();showTab(vis[(j-1+vis.length)%vis.length],true);}});
 });
-showTab((location.hash||'').slice(1));
+showTab('skills');
 
 window.__chartReady=()=>{if(BASE)renderChart(allSkills().sort((a,b)=>lifetime(b)-lifetime(a)));};
 // ---------- local storage ----------
@@ -1095,13 +1100,13 @@ $('suStart').onclick=async()=>{
   if(!picked.length){setStatus('suStatus','Pick at least one skill.',true);return;}
   const y=new Date().getFullYear();
   const skills={},last={};picked.forEach(x=>{skills[x.name]=[TIERS[Math.max(1,Math.min(10,Number(x.level)||1))-1][0]];last[x.name]=y;});
-  try{await db.doc('config/baseline').set({asOf:today(),years:[y],skills,last,xpPerHour:{},noRec:[]});askPersist();sel=picked[0].name;freshDraft();showTab('log');}
+  try{await db.doc('config/baseline').set({asOf:today(),years:[y],skills,last,xpPerHour:{},noRec:[]});askPersist();sel=picked[0].name;freshDraft();showTab('skills');}
   catch(e){setStatus('suStatus','Couldn\'t save on this device. Check that the browser allows site storage.',true);}
 };
 function showSetup(on){
   $('setup').hidden=!on;document.querySelector('.tabs').hidden=on;document.querySelector('.totals').hidden=on;
   document.querySelectorAll('.tab-panel').forEach(p=>{if(on)p.hidden=true;});
-  if(!on)showTab((location.hash||'').slice(1)||'skills');
+  if(!on)showTab('skills');
   if(on)renderSetup();
 }
 
@@ -1144,6 +1149,19 @@ function addSkill(){
 }
 $('setAdd').onclick=addSkill;
 $('setNew').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addSkill();}});
+
+// ---------- add skill from the Skills tab ----------
+TIERS.forEach((t,i)=>$('skLevel').append(el('option',{value:String(i+1),text:'Level '+(i+1)+' · '+t[1]})));
+async function addSkillAtLevel(){
+  const n=$('skNew').value.trim().slice(0,60);if(!n||!BASE)return;
+  if(allSkills().some(x=>x.toLowerCase()===n.toLowerCase())){setStatus('skStatus','You already track '+n+'.',true);return;}
+  const xp=TIERS[Math.max(1,Math.min(10,Number($('skLevel').value)||1))-1][0];
+  try{await db.doc('config/baseline').update({skills:Object.assign({},BASE.skills,{[n]:[xp]}),last:Object.assign({},BASE.last||{},{[n]:new Date().getFullYear()})});
+    $('skNew').value='';$('skLevel').value='1';sel=n;renderAll();setStatus('skStatus','');}
+  catch(e){setStatus('skStatus','Couldn\'t save. Try again.',true);}
+}
+$('skAdd').onclick=addSkillAtLevel;
+$('skNew').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addSkillAtLevel();}});
 
 // ---------- backup ----------
 $('exportBtn').onclick=()=>{
