@@ -1,6 +1,5 @@
 # Skill Tracker
 
-The tool that helps you:
 1. See a visual chart of the development of your skills.
 2. Log skill development daily.
 3. Decide what skill to work on today.
