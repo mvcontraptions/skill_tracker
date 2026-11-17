@@ -1,0 +1,1221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Skill Tracker</title>
+<meta name="description" content="Log the hours you put into your skills and watch them level up. Private, offline, no account.">
+<meta name="theme-color" content="#eef1f4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111418" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Skill Tracker">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+--bg:#eef1f4;--panel:#ffffff;--ink:#181c21;--ink-2:#4a525c;--ink-3:#6f7883;--line:#d9dee4;--track:#e3e7ec;--signal:#b87600;--signal-ink:#ffffff;--signal-soft:#fbefd6;--ghost:#c7ced6;--bad:#c23a3a;--good:#2f7d3e;
+--l1:#d63c3c;--l2:#e8603a;--l3:#ef8a2c;--l4:#e9b52a;--l5:#a9c23a;--l6:#43a64e;--l7:#2f9fb3;--l8:#2f6fd6;--l9:#6a55d8;--l10:#9b3fd0;}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#111418;--panel:#191d22;--ink:#e9ecef;--ink-2:#b3bac3;--ink-3:#8b949f;--line:#2a3038;--track:#262c33;--signal:#f0a91c;--signal-ink:#1a1204;--signal-soft:#3a2c0e;--ghost:#39414a;--bad:#ef7070;--good:#6fcf7f;--l1:#e66767;--l2:#f07a52;--l3:#f39a48;--l4:#f0c14a;--l5:#b8d24f;--l6:#55bf62;--l7:#45b6c9;--l8:#4b8fe8;--l9:#8a78ec;--l10:#b465e6;}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#111418;--panel:#191d22;--ink:#e9ecef;--ink-2:#b3bac3;--ink-3:#8b949f;--line:#2a3038;--track:#262c33;--signal:#f0a91c;--signal-ink:#1a1204;--signal-soft:#3a2c0e;--ghost:#39414a;--bad:#ef7070;--good:#6fcf7f;--l1:#e66767;--l2:#f07a52;--l3:#f39a48;--l4:#f0c14a;--l5:#b8d24f;--l6:#55bf62;--l7:#45b6c9;--l8:#4b8fe8;--l9:#8a78ec;--l10:#b465e6;}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.55}
+main{max-width:980px;margin:0 auto;padding-inline:max(1.25rem,env(safe-area-inset-left)) max(1.25rem,env(safe-area-inset-right));padding-block:calc(2.5rem + env(safe-area-inset-top)) calc(4rem + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:2.5rem}
+h1,h2,h3{font-family:"Bricolage Grotesque","IBM Plex Sans",system-ui,sans-serif;text-wrap:balance;margin:0}
+h1{font-weight:700;font-size:clamp(2.2rem,6vw,3.6rem);line-height:1;letter-spacing:-0.02em}
+h2{font-weight:500;font-size:1.4rem;margin-bottom:.75rem}
+h3{font-weight:500;font-size:1.15rem}
+.sub{color:var(--ink-2);margin:.75rem 0 0;max-width:62ch}
+.totals{display:flex;gap:2rem;flex-wrap:wrap;margin-top:1.75rem}
+.totals .n{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:2rem;font-weight:500;font-variant-numeric:tabular-nums;line-height:1.1}
+.totals .l,.stat .l{color:var(--ink-3);font-size:.85rem}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.25rem}
+.notice{background:var(--signal-soft);border-radius:10px;padding:.75rem 1rem;font-size:.9rem;color:var(--ink)}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--ink);padding:.45rem .9rem;font-size:.9rem}
+button:hover{border-color:var(--ink-3)}
+button.primary{background:var(--signal);border-color:var(--signal);color:var(--signal-ink);font-weight:500}
+button.primary:hover{filter:brightness(1.06)}
+button:disabled{opacity:.55;cursor:default}
+button.link{border:0;padding:.2rem .3rem;color:var(--ink-3);font-size:.8rem}
+button.link:hover{color:var(--bad)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--signal);outline-offset:2px}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:.45rem .6rem;font-size:.9rem;max-width:100%}
+textarea{width:100%;resize:vertical;min-height:5.5rem;line-height:1.5}
+label.field{display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:var(--ink-2)}
+.row-actions{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.status{font-size:.85rem;color:var(--ink-2);min-height:1.2em}
+.status.err{color:var(--bad)}
+.log-grid{display:grid;grid-template-columns:minmax(0,1fr) 11rem;gap:1rem;align-items:start}
+.draft{display:flex;flex-direction:column;gap:.5rem;margin-top:1rem}
+.draft-row{display:grid;grid-template-columns:minmax(0,12rem) 6rem 9.5rem minmax(0,1fr) auto;gap:.5rem;align-items:center}
+.draft-sum{font-size:.9rem;color:var(--ink-2);white-space:pre-wrap}
+.draft-head{font-size:.75rem;color:var(--ink-3);display:grid;grid-template-columns:minmax(0,12rem) 6rem 9.5rem minmax(0,1fr) auto;gap:.5rem}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1rem}
+.stat-row{display:flex;gap:1.75rem;flex-wrap:wrap;margin-bottom:1rem}
+.stat .n{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:1.5rem;font-weight:500;font-variant-numeric:tabular-nums;line-height:1.1}
+.week-list{display:flex;flex-direction:column;gap:.35rem;font-size:.9rem}
+.week-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.75rem;font-variant-numeric:tabular-nums}
+.entries{display:flex;flex-direction:column;gap:.75rem;max-height:26rem;overflow-y:auto}
+.entry{border-top:1px solid var(--line);padding-top:.65rem;font-size:.875rem}
+.entry:first-child{border-top:0;padding-top:0}
+.entry-top{display:flex;justify-content:space-between;gap:.5rem;align-items:baseline}
+.entry-date{font-weight:500}
+.entry-text{color:var(--ink-2);margin:.2rem 0 .35rem;white-space:pre-wrap}
+.chips{display:flex;flex-wrap:wrap;gap:.35rem}
+.chip{background:var(--track);border-radius:6px;padding:.1rem .5rem;font-size:.78rem;font-variant-numeric:tabular-nums}
+.empty{color:var(--ink-3);font-size:.9rem}
+.controls{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:.75rem}
+.readout{font-size:.95rem;color:var(--ink-2)}
+.readout strong{color:var(--ink);font-weight:500}
+.chart-wrap{position:relative;height:340px}
+.caption,.note{font-size:.8rem;color:var(--ink-3);margin:.5rem 0 0}
+.legend{display:flex;flex-wrap:wrap;gap:.5rem 1.25rem;font-size:.85rem;color:var(--ink-2);margin:0 0 1rem}
+.rows{display:flex;flex-direction:column;gap:2px}
+.srow{display:grid;grid-template-columns:minmax(0,11rem) minmax(0,1fr) 5.5rem;gap:1rem;align-items:center;text-align:left;border:0;background:transparent;padding:.7rem .75rem;border-radius:10px}
+.srow:hover{background:var(--track)}
+.srow.on{background:var(--signal-soft)}
+.name{font-weight:500}
+.stage{display:block;font-size:.8rem;color:var(--ink-3)}
+.bar{height:8px;background:var(--track);border-radius:4px;overflow:hidden;display:block}
+.srow.on .bar{background:var(--panel)}
+.fill{height:100%;border-radius:4px;display:block}
+.dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:0;flex:none}
+.xp{text-align:right;font-variant-numeric:tabular-nums;font-size:.9rem}
+.xp small{display:block;color:var(--ink-3);font-size:.75rem}
+.goals{display:flex;flex-direction:column;gap:1rem}
+.goal .why{color:var(--ink-2);font-size:.9rem;margin:.35rem 0 1rem;max-width:64ch}
+.goal-head{display:flex;justify-content:space-between;gap:1rem;align-items:start}
+.eta{display:flex;gap:2rem;flex-wrap:wrap;margin:0 0 1rem}
+.req{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1.1fr) minmax(0,.9fr);gap:0 1rem;font-size:.875rem;font-variant-numeric:tabular-nums}
+.req .h{color:var(--ink-3);font-size:.75rem;padding-bottom:.25rem;border-bottom:1px solid var(--line)}
+.req .c{padding:.45rem 0;border-bottom:1px solid var(--line)}
+.req .met{color:var(--ink-3)}
+.req .late{color:var(--bad);font-weight:500}
+.req .bn{font-weight:500}
+.aim{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:1rem 0 0;font-size:.875rem;color:var(--ink-2)}
+.plan{display:flex;flex-direction:column;gap:.5rem;margin-top:1rem}
+.plan-row{display:grid;grid-template-columns:minmax(0,1fr) 5rem auto;gap:.5rem;align-items:center;font-size:.9rem}
+.rules{font-size:.85rem;color:var(--ink-2);display:flex;flex-direction:column;gap:.75rem}
+.rules table{border-collapse:collapse;min-width:520px}
+.rules td{padding:.3rem 1rem .3rem 0;border-bottom:1px solid var(--line);white-space:nowrap}
+.scroll{overflow-x:auto}
+.rules p{margin:0;max-width:66ch}
+@media (max-width:640px){
+ .totals{gap:1rem 1.5rem;margin-top:1.25rem}.totals .n{font-size:1.5rem}
+ .log-grid,.two{grid-template-columns:minmax(0,1fr)}
+ .draft-head{display:none}
+ .draft-row{grid-template-columns:minmax(0,1fr) 5.5rem auto}
+ .draft-row .dmood{grid-column:1/-1;grid-row:2}
+ .draft-row .dnote{grid-column:1/-1;grid-row:3}
+ .draft-row .dmood:empty{display:none}
+ .srow{grid-template-columns:minmax(0,1fr) 5rem}.srow .bar{grid-column:1/-1;grid-row:2}
+ .req{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr)}.req .hide{display:none}
+ .eta{gap:.75rem 1.5rem}
+}
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);padding-top:.25rem;z-index:5;background:var(--bg);display:flex;gap:.25rem;border-bottom:1px solid var(--line);overflow-x:auto;margin-bottom:-1rem}
+.tabs button{border:0;border-radius:0;background:transparent;padding:.75rem 1rem;font-size:.95rem;color:var(--ink-2);border-bottom:3px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tabs button:hover{color:var(--ink)}
+.tabs button[aria-selected="true"]{color:var(--ink);font-weight:500;border-bottom-color:var(--signal)}
+.tab-panel{display:flex;flex-direction:column;gap:2.5rem}
+.tab-panel:focus{outline:none}
+.pace-list{display:flex;flex-direction:column;gap:.55rem}
+.prow{display:grid;grid-template-columns:minmax(0,12rem) minmax(0,1fr) 6.5rem;gap:1rem;align-items:center;font-size:.9rem}
+.pval{text-align:right;font-variant-numeric:tabular-nums}
+.greq{display:flex;flex-direction:column}
+.grow{display:grid;grid-template-columns:minmax(0,12rem) 5.5rem minmax(0,1fr) 7.5rem;gap:1rem;align-items:center;font-size:.9rem;padding:.55rem 0;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+.grow.met{color:var(--ink-3)}
+.gto{text-align:right}
+.diary{display:flex;flex-direction:column}
+.month{font-size:1.05rem;color:var(--ink-2);padding:1.5rem 0 .5rem;border-bottom:1px solid var(--line)}
+.month:first-child{padding-top:0}
+.dday{display:grid;grid-template-columns:3.5rem minmax(0,1fr);gap:1.25rem;padding:1rem 0;border-bottom:1px solid var(--line)}
+.ddate{text-align:center}
+.dnum{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:2rem;font-weight:500;line-height:1;font-variant-numeric:tabular-nums}
+.dwk{font-size:.75rem;color:var(--ink-3);margin-top:.2rem}
+.dentry+.dentry{margin-top:.9rem;padding-top:.9rem;border-top:1px dashed var(--line)}
+.dline{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:1rem;align-items:baseline;padding:.15rem 0}
+.dxp{font-weight:500;font-variant-numeric:tabular-nums;text-align:right}
+.dxp small{font-weight:400;color:var(--ink-3);margin-left:.5rem;font-size:.8rem}
+.dtext{color:var(--ink-2);font-size:.875rem;margin:.4rem 0 0;white-space:pre-wrap;max-width:62ch}
+.dfoot{display:flex;justify-content:flex-end;gap:.25rem}
+.req.lvl4{grid-template-columns:minmax(0,1.3fr) minmax(0,1.3fr) minmax(0,.9fr) minmax(0,.9fr)}
+.req.req3{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr)}
+@media (max-width:640px){.req.lvl4{grid-template-columns:minmax(0,1.2fr) minmax(0,1.3fr) minmax(0,1fr)}.step{grid-template-columns:auto minmax(0,1fr)}.step .sacts{grid-column:2}.steps.nested{margin-left:.5rem;padding-left:.75rem}.subwrap .addstep{margin-left:1.25rem}.goal-head{flex-wrap:wrap}.dxp small{display:block;margin-left:0}.grow{grid-template-columns:minmax(0,1fr) auto}.grow .bar{grid-column:1/-1;grid-row:2}.grow .glv{display:none}.prow{grid-template-columns:minmax(0,1fr) 5.5rem}.prow .bar{grid-column:1/-1;grid-row:2}.req{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr)}}
+.gcount{font-size:.85rem;color:var(--ink-3);margin:0 0 .5rem}
+.steps{list-style:none;margin:0;padding:0;counter-reset:st}
+.step{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:.75rem;align-items:start;padding:.65rem 0;border-top:1px solid var(--line);counter-increment:st}
+.step input[type=checkbox]{width:1.1rem;height:1.1rem;margin:.2rem 0 0;accent-color:var(--signal)}
+.step label{cursor:pointer}
+.step.skillstep label{cursor:default}
+.stext{display:block}
+.smeta{display:block;font-size:.8rem;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.step.done .stext{text-decoration:line-through;color:var(--ink-3)}
+.srm{opacity:.0}
+.step:hover .srm,.step:focus-within .srm,.srm:focus-visible{opacity:1}
+@media (hover:none){.srm{opacity:1}}
+.addstep{display:flex;gap:.5rem;margin-top:.75rem}
+.addstep input{flex:1;min-width:0}
+.plan-task{grid-template-columns:minmax(0,1fr) auto}
+.plan-task input{width:100%}
+.steps.nested{margin-left:1.9rem;border-left:2px solid var(--line);padding-left:.9rem}
+.subwrap{list-style:none;padding:0 0 .75rem}
+.subwrap .addstep{margin-left:2.8rem}
+.sacts{display:flex;gap:.25rem;align-items:center;white-space:nowrap}
+.link.show{color:var(--signal)}
+.link.show:hover{color:var(--ink)}
+.gdone h3{text-decoration:line-through;color:var(--ink-3)}
+.gparent{font-size:.8rem;color:var(--ink-3);margin:0 0 .35rem}
+.gparent .link{font-size:.8rem;padding:0}
+.goal{scroll-margin-top:4rem;transition:box-shadow .3s}
+.goal.flash{box-shadow:0 0 0 3px var(--signal)}
+.dmoodtag{font-size:.75rem;color:var(--ink-3);margin-left:.5rem;border:1px solid var(--line);border-radius:999px;padding:0 .45rem}
+.dlvltag{font-size:.75rem;font-weight:600;color:var(--ink);margin-left:.5rem;border:1px solid var(--c);border-radius:999px;padding:0 .45rem;background:color-mix(in srgb,var(--c) 18%,transparent)}
+.lvlup{display:flex;gap:1rem;align-items:flex-start;justify-content:space-between;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:.9rem 1rem;margin:0 0 1rem}
+.lvl-list{display:grid;gap:.6rem;min-width:0}
+.lvl-item{display:flex;gap:.75rem;align-items:center;min-width:0}
+.lvl-badge{flex:none;width:2.1rem;height:2.1rem;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#111;font-family:'Bricolage Grotesque',sans-serif;animation:lvlpop .5s ease-out}
+.lvl-head{margin:0;font-weight:600}
+.lvl-when{margin:0;font-size:.85rem;color:var(--ink-3)}
+@keyframes lvlpop{0%{transform:scale(.4);opacity:0}70%{transform:scale(1.15);opacity:1}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.lvl-badge{animation:none}}
+.rec-top{display:flex;align-items:center;gap:.25rem;flex-wrap:wrap}
+.rec-name{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:1.6rem;font-weight:500;line-height:1.15;margin-right:.75rem}
+.rec-lv{color:var(--ink-3);font-size:.85rem}
+.rec-why{margin:.6rem 0 0;padding-left:1.1rem;color:var(--ink-2);font-size:.925rem;display:flex;flex-direction:column;gap:.2rem}
+.rec-alt{margin:.75rem 0 0;font-size:.9rem}
+.log-proj{display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end;margin-top:.75rem}
+.log-proj select{min-width:14rem;max-width:100%}
+.log-proj>label{min-width:0;max-width:100%}
+@media (max-width:640px){.log-proj>label{flex:1 1 100%}.log-proj select{width:100%;min-width:0}}
+.pct-in{display:flex;align-items:center;gap:.35rem}
+.pct-in input{width:5.5rem}
+.pct-last{font-size:.8rem;color:var(--ink-3);padding-bottom:.55rem}
+.pj-form{display:grid;grid-template-columns:minmax(0,1fr);gap:.75rem}
+.pj-prog{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1rem;align-items:center;margin:.25rem 0 .35rem}
+.pj-pct{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:1.6rem;font-weight:500;font-variant-numeric:tabular-nums;min-width:3.5rem}
+.pj-hist{font-size:.8rem;color:var(--ink-3);margin:.6rem 0 0;font-variant-numeric:tabular-nums}
+.pj-acts{display:flex;gap:.25rem;flex-wrap:wrap;margin-top:.75rem;border-top:1px solid var(--line);padding-top:.5rem}
+.pj-badge{font-size:.75rem;border:1px solid var(--line);border-radius:999px;padding:.05rem .55rem;color:var(--ink-3)}
+.pdone h3{color:var(--ink-3)}
+.dproj{font-size:.8rem;font-weight:500;margin:.35rem 0 0;color:var(--ink-2)}
+.dproj span{font-weight:400;color:var(--ink-3)}
+.plan-lvl h3{margin-bottom:.75rem}
+.lp-controls{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.4fr) minmax(0,1fr);gap:.75rem;margin-bottom:1rem}
+.lp-controls select,.lp-controls input{width:100%}
+.stat .n.late{color:var(--bad)}
+.lp-pick{color:var(--ink);font-size:inherit;padding:0;text-align:left}
+.lp-pick:hover{color:var(--signal)}
+@media (max-width:640px){.lp-controls{grid-template-columns:minmax(0,1fr)}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.setup-list{display:flex;flex-direction:column;margin-top:1rem}
+.su-row{display:grid;grid-template-columns:auto minmax(0,1fr) 7rem;gap:.75rem;align-items:center;padding:.6rem 0;border-top:1px solid var(--line)}
+.su-row input[type=checkbox]{width:1.1rem;height:1.1rem;accent-color:var(--signal);margin:0}
+.su-row label{cursor:pointer}
+.su-desc{display:block;font-size:.8rem;color:var(--ink-3)}
+.su-hours{display:flex;align-items:center;gap:.35rem;font-size:.8rem;color:var(--ink-3)}
+.su-hours input{width:5rem}
+.su-row.off .su-hours{display:none}
+.su-add{display:flex;gap:.5rem;margin-top:.75rem}
+.su-add input{flex:1;min-width:0}
+.set-row{display:grid;grid-template-columns:minmax(0,1fr) 7rem 6.5rem minmax(0,11rem);gap:.75rem;align-items:end;padding:.65rem 0;border-top:1px solid var(--line);font-size:.9rem}
+.set-row input[type=number],.set-row select{width:100%}
+.set-row .field{font-size:.75rem;color:var(--ink-3)}
+.set-name{align-self:center}
+.set-pick{display:flex;align-items:center;gap:.35rem;font-size:.8rem;color:var(--ink-2);white-space:nowrap}
+.set-pick input{accent-color:var(--signal)}
+.set-block{display:flex;flex-direction:column;gap:.75rem}
+.set-block p{margin:0;max-width:66ch;color:var(--ink-2);font-size:.9rem}
+.pct-last:empty{display:none}
+#draftRows{margin-top:0}
+.lp-skill{display:grid;grid-template-columns:minmax(0,1fr) 5rem auto;gap:.5rem;align-items:center}
+.lp-skill select{width:100%}
+@media (max-width:640px){
+ .su-row{grid-template-columns:auto minmax(0,1fr)}.su-row .su-hours{grid-column:2}
+ .set-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.set-row .set-name,.set-row .set-pick{grid-column:1/-1}
+}
+</style>
+</head>
+<body>
+<main>
+<header>
+<h1>Skill Tracker</h1>
+<p class="sub">A daily log of the time you put into your skills, turned into levels. One XP is one focused hour of practice.</p>
+<div class="totals">
+<div><div class="n" id="totalXp">–</div><div class="l">Total XP</div></div>
+<div><div class="n" id="skillCount">–</div><div class="l">Skills tracked</div></div>
+<div><div class="n" id="topSkill">–</div><div class="l">Highest level</div></div>
+<div><div class="n" id="streak">–</div><div class="l">Day logging streak</div></div>
+</div>
+</header>
+
+<div class="lvlup" id="lvlBanner" role="status" hidden></div>
+<p class="notice" id="loadNote">Loading your data…</p>
+<section class="panel" id="setup" aria-labelledby="setupH" hidden>
+<h2 id="setupH">Set up your skill tracker</h2>
+<p class="sub" style="margin-top:0">Add the skills you want to track. For each one, estimate how many focused hours you've already put in. Rough is fine, and you can change it later in Settings. One hour is one XP.</p>
+<label class="field" for="suBirth" style="margin-top:1rem;max-width:14rem">Year you were born (optional, shows your age on the chart)<input type="number" id="suBirth" min="1900" max="2100" inputmode="numeric"></label>
+<div class="setup-list" id="suList"></div>
+<div class="su-add"><input type="text" id="suNew" placeholder="Skill name" aria-label="New skill name"><button type="button" id="suAdd">Add</button></div>
+<div class="row-actions" style="margin-top:1.25rem">
+<button class="primary" type="button" id="suStart">Start tracking</button>
+<button type="button" id="suRestore">Restore a backup</button>
+<span class="status" id="suStatus" role="status"></span>
+</div>
+<p class="note">Everything stays on this device. There's no account and nothing is uploaded.</p>
+</section>
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+<nav class="tabs" role="tablist" aria-label="Sections">
+<button type="button" role="tab" id="t-skills" aria-controls="p-skills" data-tab="skills">Skills</button>
+<button type="button" role="tab" id="t-goals" aria-controls="p-goals" data-tab="goals">Goals</button>
+<button type="button" role="tab" id="t-projects" aria-controls="p-projects" data-tab="projects">Projects</button>
+<button type="button" role="tab" id="t-pace" aria-controls="p-pace" data-tab="pace">Pace</button>
+<button type="button" role="tab" id="t-diary" aria-controls="p-diary" data-tab="diary">Diary</button>
+<button type="button" role="tab" id="t-log" aria-controls="p-log" data-tab="log">Log</button>
+<button type="button" role="tab" id="t-settings" aria-controls="p-settings" data-tab="settings">Settings</button>
+</nav>
+<div class="tab-panel" role="tabpanel" id="p-skills" aria-labelledby="t-skills" tabindex="-1">
+<section aria-labelledby="chartH">
+<h2 id="chartH">XP over time</h2>
+<div class="panel">
+<div class="controls">
+<div class="readout" id="readout"></div>
+<button id="scaleBtn" type="button">Log scale</button>
+</div>
+<div class="chart-wrap"><canvas id="chart" role="img" aria-label="Cumulative XP over time for each skill, with the selected skill highlighted."></canvas></div>
+<p class="caption" id="chartCap">Each point marks the end of a year. Select a skill below to highlight it.</p>
+</div>
+</section>
+<section aria-labelledby="levelsH">
+<h2 id="levelsH">Current levels</h2>
+<div class="legend" id="legend"></div>
+<div class="rows" id="rows"></div>
+</section>
+<section aria-labelledby="rulesH">
+<h2 id="rulesH">How scoring works</h2>
+<div class="rules">
+<div class="scroll"><table>
+<tr><td>Level 1</td><td>Newcomer</td><td>0 XP</td><td>Level 6</td><td>Advanced amateur</td><td>500 XP</td></tr>
+<tr><td>Level 2</td><td>Dabbler</td><td>20 XP</td><td>Level 7</td><td>Semi-pro</td><td>1,000 XP</td></tr>
+<tr><td>Level 3</td><td>Beginner</td><td>50 XP</td><td>Level 8</td><td>Professional</td><td>2,500 XP</td></tr>
+<tr><td>Level 4</td><td>Hobbyist</td><td>100 XP</td><td>Level 9</td><td>Veteran</td><td>5,000 XP</td></tr>
+<tr><td>Level 5</td><td>Committed amateur</td><td>250 XP</td><td>Level 10</td><td>Master</td><td>10,000 XP</td></tr>
+</table></div>
+<p>Only active practice counts. Passive time, like watching, reading about a skill, or sitting through a lecture, earns nothing.</p>
+<p>One session can build more than one skill. Split the time between them, or give a skill part of the time when it was only part of the work.</p>
+<p id="rateRule" hidden></p>
+<p>Rust: after a full year without practice, a skill's effective level drops by 10% of its XP per extra year, capped at 30%. Lifetime XP never disappears.</p>
+</div>
+</section>
+</div>
+<div class="tab-panel" role="tabpanel" id="p-goals" aria-labelledby="t-goals" tabindex="-1">
+<section aria-labelledby="goalsH">
+<h2 id="goalsH">Goals</h2>
+<p class="sub" style="margin:-.25rem 0 1rem">Each goal broken into smaller goals. Check them off as you finish them. Skill levels tick themselves off when you reach them.</p>
+<div class="panel" style="margin-bottom:1rem">
+<label class="field" for="goalText">Add a goal
+<textarea id="goalText" style="min-height:3.5rem" placeholder="What do you want to achieve?"></textarea>
+</label>
+<div class="row-actions" style="margin-top:.75rem">
+<button class="primary" id="planBtn" type="button">Break it into steps</button>
+<span class="status" id="goalStatus" role="status"></span>
+</div>
+<div class="plan" id="plan" hidden>
+<p class="gcount" id="planFor"></p>
+<label class="field" for="planName">Goal name<input id="planName" type="text"></label>
+<p class="draft-sum" id="planWhy"></p>
+<div id="planRows" class="plan"></div>
+<div class="row-actions">
+<button class="primary" id="planSave" type="button">Save goal</button>
+<button id="planDiscard" type="button">Discard</button>
+</div>
+</div>
+</div>
+<div class="goals" id="goals"></div>
+</section>
+</div>
+<div class="tab-panel" role="tabpanel" id="p-projects" aria-labelledby="t-projects" tabindex="-1">
+<section aria-labelledby="projH">
+<h2 id="projH">Projects</h2>
+<p class="sub" style="margin:-.25rem 0 1rem">What you're working on right now. Pick a project when you log, and estimate how close to done it is each time.</p>
+<div class="panel" style="margin-bottom:1rem">
+<div class="pj-form">
+<label class="field" for="pjName">Project name<input type="text" id="pjName" placeholder="Name"></label>
+<label class="field" for="pjDesc">What it is<textarea id="pjDesc" style="min-height:3.5rem" placeholder="What it is and what done looks like."></textarea></label>
+</div>
+<div class="row-actions" style="margin-top:.75rem"><button class="primary" id="pjAdd" type="button">Add project</button><span class="status" id="pjStatus" role="status"></span></div>
+</div>
+<div class="goals" id="projects"></div>
+</section>
+</div>
+<div class="tab-panel" role="tabpanel" id="p-pace" aria-labelledby="t-pace" tabindex="-1">
+<section aria-labelledby="weekH">
+<section aria-labelledby="recH" style="margin-bottom:2.5rem">
+<h2 id="recH">Work on today</h2>
+<div class="panel rec" id="rec"></div>
+</section>
+<h2 id="weekH">Last 7 days</h2>
+<div class="panel">
+<div class="stat-row">
+<div class="stat"><div class="n" id="weekHours">–</div><div class="l">Hours logged</div></div>
+<div class="stat"><div class="n" id="weekDays">–</div><div class="l">Days with entries</div></div>
+</div>
+<div class="pace-list" id="weekList"></div>
+</div>
+</section>
+<section aria-labelledby="lvlH">
+<h2 id="lvlH">When you'll level up</h2>
+<div class="panel plan-lvl">
+<h3>Plan a level</h3>
+<div class="lp-controls">
+<label class="field" for="lpSkill">Skill<select id="lpSkill"></select></label>
+<label class="field" for="lpLevel">Level to reach<select id="lpLevel"></select></label>
+<label class="field" for="lpDate">By (optional)<input type="date" id="lpDate"></label>
+</div>
+<div class="lp-out" id="lpOut" aria-live="polite"></div>
+</div>
+<div class="panel" id="levelups" style="margin-top:1rem"></div>
+</section>
+<section aria-labelledby="timeH">
+<h2 id="timeH">When you'll reach your goals</h2>
+<div class="goals" id="timelines"></div>
+<p class="note" id="paceNote"></p>
+</section>
+</div>
+<div class="tab-panel" role="tabpanel" id="p-diary" aria-labelledby="t-diary" tabindex="-1">
+<section aria-labelledby="diaryH">
+<h2 id="diaryH">Diary</h2>
+<div class="diary" id="diary"></div>
+</section>
+</div>
+<div class="tab-panel" role="tabpanel" id="p-log" aria-labelledby="t-log" tabindex="-1">
+<section aria-labelledby="logH">
+<h2 id="logH">Log your work</h2>
+<div class="panel">
+<div class="log-grid">
+<label class="field" for="logText">What did you work on? (optional note)
+<textarea id="logText" placeholder="What you did, in your own words."></textarea>
+</label>
+<label class="field" for="logDate">Day
+<input type="date" id="logDate">
+</label>
+</div>
+<div class="log-proj">
+<label class="field" for="logProject">Project (optional)
+<select id="logProject"><option value="">None</option></select>
+</label>
+<label class="field" for="logPct" id="logPctWrap" hidden>How close to done?
+<span class="pct-in"><input type="number" id="logPct" min="0" max="100" step="1" inputmode="numeric"><span>%</span></span>
+</label>
+<span class="pct-last" id="logPctLast"></span>
+</div>
+<div class="draft" id="draft">
+<p class="draft-sum" id="draftSum"></p>
+<div class="draft-head"><span>Skill</span><span>Hours</span><span>How it felt</span><span>Detail (optional)</span><span></span></div>
+<div id="draftRows" class="draft"></div>
+<div class="row-actions">
+<button class="primary" id="saveBtn" type="button">Save entry</button>
+<button id="addRowBtn" type="button">Add a skill</button>
+<button id="discardBtn" type="button">Discard</button>
+<span class="status" id="logStatus" role="status"></span>
+</div>
+</div>
+</div>
+</section>
+</div>
+<div class="tab-panel" role="tabpanel" id="p-settings" aria-labelledby="t-settings" tabindex="-1">
+<section aria-labelledby="setSkillsH">
+<h2 id="setSkillsH">Skills</h2>
+<div class="panel">
+<p class="note" style="margin:0 0 .75rem">Starting XP is what you had before you began logging. XP per hour lets a narrower craft level up faster. Skills left out of the daily pick still count everywhere else.</p>
+<div id="setSkills"></div>
+<div class="su-add" style="margin-top:1rem"><input type="text" id="setNew" placeholder="New skill name" aria-label="New skill name"><button type="button" id="setAdd">Add skill</button></div>
+<span class="status" id="setStatus" role="status"></span>
+</div>
+</section>
+<section aria-labelledby="setYouH">
+<h2 id="setYouH">You</h2>
+<div class="panel">
+<label class="field" for="setBirth" style="max-width:14rem">Year you were born (optional)<input type="number" id="setBirth" min="1900" max="2100" inputmode="numeric"></label>
+</div>
+</section>
+<section aria-labelledby="setDataH">
+<h2 id="setDataH">Your data</h2>
+<div class="panel set-block">
+<p>Everything is saved on this device only. Download a backup now and then, and use it to move your tracker to a new phone or browser.</p>
+<div class="row-actions">
+<button class="primary" type="button" id="exportBtn">Download a backup</button>
+<button type="button" id="importBtn">Restore a backup</button>
+<span class="status" id="dataStatus" role="status"></span>
+</div>
+<p id="installTip"></p>
+<div class="row-actions" style="border-top:1px solid var(--line);padding-top:.75rem">
+<button type="button" id="resetBtn">Delete all data</button>
+<span class="status" id="resetStatus" role="status"></span>
+</div>
+</div>
+</section>
+</div>
+</main>
+
+<script async src="vendor/chart.umd.js" onload="window.__chartReady&&window.__chartReady()"></script>
+<script>
+const TIERS=[[0,'Newcomer'],[20,'Dabbler'],[50,'Beginner'],[100,'Hobbyist'],[250,'Committed amateur'],[500,'Advanced amateur'],[1000,'Semi-pro'],[2500,'Professional'],[5000,'Veteran'],[10000,'Master']];
+const DESC={};
+const $=id=>document.getElementById(id);
+function el(tag,props,kids){const e=document.createElement(tag);if(props)for(const k in props){if(k==='text')e.textContent=props[k];else if(k==='cls')e.className=props[k];else if(k==='style')e.setAttribute('style',props[k]);else if(k.startsWith('on'))e.addEventListener(k.slice(2),props[k]);else e.setAttribute(k,props[k]);}(kids||[]).forEach(c=>c!=null&&e.append(c));return e;}
+function fmt(n){return Math.round(n).toLocaleString();}
+function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function parseDay(s){const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d,12);}
+function tier(x){let i=0;TIERS.forEach((t,j)=>{if(x>=t[0])i=j;});return i;}
+function dur(h){let m=Math.round(h*60/5)*5;if(h>0&&m===0)m=5;if(m<60)return m+' min';const H=Math.floor(m/60),M=m%60;return H+' hr'+(M?' '+M+' min':'');}
+function niceDay(s){return parseDay(s).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});}
+const WEEK_MS=7*864e5;
+
+let db=null,BASE=null,DAYS=[],GOALS=[],PROJECTS=[],sel='',logScale=false,chart=null;
+const today=()=>iso(new Date());
+$('logDate').value=today();
+
+function rate(n){return (BASE&&BASE.xpPerHour&&BASE.xpPerHour[n])||1;}
+function allSkills(){const s=new Set(Object.keys(BASE?BASE.skills:{}));DAYS.forEach(d=>(d.entries||[]).forEach(e=>(e.items||[]).forEach(i=>s.add(i.skill))));GOALS.forEach(g=>stepsOf(g).forEach(x=>{if(x.kind==='skill'&&x.skill)s.add(x.skill);}));return [...s];}
+let _li=null,_liD=null,_liB=null;
+function logItems(){if(_li&&_liD===DAYS&&_liB===BASE)return _li;const out=[];DAYS.forEach(d=>{if(!BASE)return;(d.entries||[]).forEach(e=>(e.items||[]).forEach(i=>{const h=Number(i.hours)||0;if(h>0)out.push({date:d.date,skill:i.skill,hours:h,xp:h*rate(i.skill)});}));});_li=out;_liD=DAYS;_liB=BASE;return out;}
+function baseFinal(n){const a=BASE.skills[n];return a?a[a.length-1]:0;}
+let _lu=null,_luD=null,_luB=null;
+function levelUps(){if(!BASE)return [];if(_lu&&_luD===DAYS&&_luB===BASE)return _lu;const cur={},out=[];
+  DAYS.slice().sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0).forEach(d=>(d.entries||[]).slice().sort((a,b)=>(a.at||0)-(b.at||0)).forEach(e=>(e.items||[]).forEach(i=>{const h=Number(i.hours)||0;if(h<=0)return;
+    if(!(i.skill in cur))cur[i.skill]=baseFinal(i.skill);const b=tier(cur[i.skill]);cur[i.skill]+=h*rate(i.skill);const a=tier(cur[i.skill]);
+    if(a>b)out.push({key:e.id+'|'+i.skill+'|'+(a+1),skill:i.skill,level:a+1,name:TIERS[a][1],date:d.date,entry:e.id});})));
+  _lu=out;_luD=DAYS;_luB=BASE;return out;}
+function lvlSeen(){try{return JSON.parse(localStorage.getItem('lvlseen')||'[]');}catch(e){return [];}}
+function renderLevelBanner(){const box=$('lvlBanner');if(!box)return;const seen=lvlSeen(),from=iso(new Date(Date.now()-6*864e5)),t=today();
+  const list=levelUps().filter(u=>u.date>=from&&u.date<=t&&!seen.includes(u.key)).reverse().slice(0,3);
+  box.hidden=!list.length;if(!list.length){box.replaceChildren();return;}
+  box.replaceChildren(el('div',{cls:'lvl-list'},list.map(u=>el('div',{cls:'lvl-item'},[el('span',{cls:'lvl-badge',style:'background:var(--l'+u.level+')',text:String(u.level)}),
+    el('div',{},[el('p',{cls:'lvl-head',text:'Level up! '+u.skill+' reached Level '+u.level+', '+u.name+'.'}),el('p',{cls:'lvl-when',text:u.date===t?'Today':niceDay(u.date)})])]))),
+    el('button',{cls:'link',type:'button',text:'Dismiss',onclick:()=>{try{localStorage.setItem('lvlseen',JSON.stringify(seen.concat(list.map(u=>u.key)).slice(-200)));}catch(e){}box.hidden=true;box.replaceChildren();}}));}
+function lifetime(n){return baseFinal(n)+logItems().filter(i=>i.skill===n).reduce((s,i)=>s+i.xp,0);}
+function lastYear(n){let y=(BASE.last&&BASE.last[n])||0;logItems().forEach(i=>{if(i.skill===n)y=Math.max(y,Number(i.date.slice(0,4)));});return y||new Date().getFullYear();}
+function rustPct(n){const off=new Date().getFullYear()-lastYear(n);return Math.min(0.3,Math.max(0,off-1)*0.1);}
+function eff(n){return lifetime(n)*(1-rustPct(n));}
+
+function paceInfo(){
+  const items=logItems();
+  const from=iso(new Date(Date.now()-7*864e5));
+  return {src:'diary',weeks:1,from,calc:n=>items.filter(i=>i.skill===n&&i.date>from).reduce((s,i)=>s+i.xp,0)};
+}
+
+function monthly(){return !BASE.years||BASE.years.length<3;}
+function series(){
+  const items=logItems();
+  if(monthly()){
+    const start=(BASE.asOf||today()).slice(0,7);let end=today().slice(0,7);items.forEach(i=>{if(i.date.slice(0,7)>end)end=i.date.slice(0,7);});
+    const months=[];let [y,m]=start.split('-').map(Number);
+    for(;;){const k=y+'-'+String(m).padStart(2,'0');months.push(k);if(k>=end||months.length>240)break;m++;if(m>12){m=1;y++;}}
+    const out={};allSkills().forEach(n=>{const b=baseFinal(n);out[n]=months.map(k=>b+items.filter(i=>i.skill===n&&i.date.slice(0,7)<=k).reduce((s,i)=>s+i.xp,0));});
+    return {years:months,data:out,monthly:true};
+  }
+  const years=[...BASE.years];
+  items.forEach(i=>{const y=Number(i.date.slice(0,4));while(y>years[years.length-1])years.push(years[years.length-1]+1);});
+  const out={};
+  allSkills().forEach(n=>{const a=BASE.skills[n]||[];out[n]=years.map((y,k)=>{const base=k<a.length?a[k]:(a.length?a[a.length-1]:0);return base+items.filter(i=>i.skill===n&&Number(i.date.slice(0,4))<=y).reduce((s,i)=>s+i.xp,0);});});
+  return {years,data:out};
+}
+
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+function renderAll(){
+  if(!BASE)return;
+  const names=allSkills().sort((a,b)=>lifetime(b)-lifetime(a));
+  $('totalXp').textContent=fmt(names.reduce((s,n)=>s+lifetime(n),0));
+  $('skillCount').textContent=names.length;
+  $('topSkill').textContent='Level '+(Math.max(...names.map(n=>tier(eff(n))))+1);
+  renderRateRule();if(!$('p-settings').hidden)renderSettings();
+  renderStreak();renderDiary();renderProjects();renderLevels(names);renderChart(names);renderGoals();renderPace();renderLevelBanner();
+}
+function renderStreak(){
+  const logged=new Set(DAYS.filter(d=>(d.entries||[]).length).map(d=>d.date));
+  let d=new Date();if(!logged.has(iso(d)))d=new Date(d-864e5);let n=0;
+  while(logged.has(iso(d))){n++;d=new Date(d-864e5);}
+  $('streak').textContent=n;
+}
+let pendingDelete=null;
+function renderDiary(){
+  const box=$('diary');box.replaceChildren();const lu=new Map(levelUps().map(u=>[u.entry+'|'+u.skill,u]));
+  const days=DAYS.filter(d=>(d.entries||[]).length).sort((a,b)=>a.date<b.date?1:-1);
+  if(!days.length){box.append(el('p',{cls:'empty',text:'Nothing logged yet. Entries from the Log tab show up here, newest first.'}));return;}
+  let month='';
+  days.forEach(d=>{
+    const dt=parseDay(d.date);const m=dt.toLocaleDateString(undefined,{month:'long',year:'numeric'});
+    if(m!==month){month=m;box.append(el('h3',{cls:'month',text:m}));}
+    const entries=[...d.entries].sort((a,b)=>(b.at||0)-(a.at||0));
+    box.append(el('article',{cls:'dday'},[
+      el('div',{cls:'ddate'},[el('div',{cls:'dnum',text:String(dt.getDate())}),el('div',{cls:'dwk',text:dt.toLocaleDateString(undefined,{weekday:'short'})})]),
+      el('div',{},entries.map(e=>{
+        const del=el('button',{cls:'link',type:'button',text:pendingDelete===e.id?'Confirm delete':'Delete',onclick:()=>{if(pendingDelete===e.id){deleteEntry(d.date,e.id);}else{pendingDelete=e.id;renderDiary();}}});
+        return el('div',{cls:'dentry'},[
+          ...(e.items||[]).map(i=>{const h=Number(i.hours)||0;return el('div',{cls:'dline'},[
+            el('span',{},[el('span',{cls:'dot',style:'background:var(--l'+(tier(eff(i.skill))+1)+')'}),document.createTextNode(i.skill),i.mood?el('span',{cls:'dmoodtag',text:MOODS[i.mood-1]}):null,lu.has(e.id+'|'+i.skill)?el('span',{cls:'dlvltag',style:'--c:var(--l'+lu.get(e.id+'|'+i.skill).level+')',text:'Level up · L'+lu.get(e.id+'|'+i.skill).level}):null]),
+            el('span',{cls:'dxp'},[document.createTextNode('+'+(Math.round(h*rate(i.skill)*10)/10).toLocaleString()+' XP'),el('small',{text:dur(h)})])]);}),
+          e.project?el('p',{cls:'dproj'},[document.createTextNode((projectById(e.project)||{name:'Deleted project'}).name),e.progress!=null?el('span',{text:' · '+e.progress+'% done'}):null]):null,
+          e.text?el('p',{cls:'dtext',text:e.text}):null,
+          el('div',{cls:'dfoot'},[el('button',{cls:'link',type:'button',text:'Edit',onclick:()=>editEntry(d.date,e)}),del])
+        ]);
+      }))
+    ]));
+  });
+}
+function renderLevels(names){
+  $('legend').replaceChildren(...TIERS.map((g,i)=>el('span',{},[el('span',{cls:'dot',style:'background:var(--l'+(i+1)+')'}),document.createTextNode((i+1)+' '+g[1])])));
+  const rows=$('rows');rows.replaceChildren();
+  names.forEach(n=>{
+    const v=eff(n),r=rustPct(n),t=tier(v),lo=TIERS[t][0],hi=t<9?TIERS[t+1][0]:TIERS[9][0];
+    const pct=t<9?Math.round((v-lo)/(hi-lo)*100):100;
+    const b=el('button',{cls:'srow'+(n===sel?' on':''),type:'button','aria-pressed':String(n===sel),onclick:()=>{sel=n;renderLevels(names);updateChart();}},[
+      el('span',{},[el('span',{cls:'name',text:n}),el('span',{cls:'stage'},[el('span',{cls:'dot',style:'background:var(--l'+(t+1)+')'}),document.createTextNode('Level '+(t+1)+', '+TIERS[t][1]+(r>0?' · rusty −'+Math.round(r*100)+'%':''))])]),
+      el('span',{cls:'bar','aria-hidden':'true'},[el('span',{cls:'fill',style:'width:'+pct+'%;background:var(--l'+(t+1)+')'})]),
+      el('span',{cls:'xp'},[document.createTextNode(fmt(v)),el('small',{text:r>0?'of '+fmt(lifetime(n))+' earned':(t<9?fmt(hi-v)+' to next':'Maxed')})])
+    ]);
+    rows.append(b);
+  });
+}
+function renderChart(names){
+  if(typeof Chart==='undefined')return;
+  const s=series();
+  if(chart)chart.destroy();
+  const lab=s.monthly?s.years.map(k=>parseDay(k+'-01').toLocaleDateString(undefined,{month:'short',year:'2-digit'})):s.years.map(String);
+  $('chartCap').textContent=s.monthly?'Each point marks the end of a month. Select a skill below to highlight it.':'Each point marks the end of a year.'+(BASE.birthYear?' Hover a point to see your age that year.':'')+' Select a skill below to highlight it.';
+  chart=new Chart($('chart'),{type:'line',data:{labels:lab,datasets:names.map(n=>({label:n,data:s.data[n],tension:.25,borderCapStyle:'round',borderJoinStyle:'round'}))},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:250},interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:false},tooltip:{filter:i=>i.dataset.label===sel,callbacks:{title:c=>{if(s.monthly||!BASE.birthYear)return c[0].label;const y=Number(c[0].label);return y+', age '+(y-BASE.birthYear-1)+'–'+(y-BASE.birthYear);},label:c=>c.dataset.label+': '+fmt(c.raw)+' XP'}}},
+      scales:{x:{grid:{display:false},ticks:{color:css('--ink-3'),autoSkip:false,maxRotation:45}},y:{grid:{color:css('--line')},ticks:{color:css('--ink-3'),callback:v=>Number(v).toLocaleString()}}}}});
+  chart._series=s;updateChart();
+}
+function updateChart(){
+  if(!chart)return;
+  const signal=css('--signal'),ghost=css('--ghost'),s=chart._series;
+  chart.data.datasets.forEach(d=>{const on=d.label===sel;d.borderColor=on?signal:ghost;d.borderWidth=on?3:1.5;d.order=on?0:1;d.pointRadius=on?3:0;d.pointBackgroundColor=signal;d.data=s.data[d.label].map(v=>logScale?(v>0?v:null):v);});
+  chart.options.scales.y.type=logScale?'logarithmic':'linear';
+  if(logScale)chart.options.scales.y.min=1;else delete chart.options.scales.y.min;
+  chart.update();
+  const v=eff(sel),t=tier(v),r=rustPct(sel);
+  $('readout').replaceChildren(el('strong',{text:sel}),document.createTextNode(' · Level '+(t+1)+', '+TIERS[t][1]+' · '+fmt(v)+' XP'+(r>0?' (rusty, '+Math.round(r*100)+'% off '+fmt(lifetime(sel))+')':'')));
+  $('scaleBtn').textContent=logScale?'Linear scale':'Log scale';
+}
+$('scaleBtn').onclick=()=>{logScale=!logScale;updateChart();};
+
+function stepsOf(g){
+  if(Array.isArray(g.steps))return g.steps;
+  return Object.entries(g.req||{}).map(([n,lv],i)=>({id:'r'+i,kind:'skill',skill:n,level:Number(lv)}));
+}
+function goalById(id){return GOALS.find(x=>x.id===id);}
+function subOf(s){return s.sub?goalById(s.sub):null;}
+function skillTarget(s){return TIERS[Math.max(1,Math.min(10,Number(s.level)||1))-1][0];}
+function goalDone(g,seen){seen=seen||new Set();if(seen.has(g.id))return false;seen.add(g.id);const st=stepsOf(g);return st.length>0&&st.every(x=>stepDone(x,seen));}
+function stepDone(s,seen){const c=subOf(s);if(c)return goalDone(c,seen);return s.kind==='skill'?eff(s.skill)>=skillTarget(s):!!s.done;}
+function stepLabel(s){return s.kind==='skill'?'Reach Level '+s.level+' in '+s.skill:s.text;}
+function treeSteps(g,seen){seen=seen||new Set();if(seen.has(g.id))return [];seen.add(g.id);const out=[];stepsOf(g).forEach(x=>{const c=subOf(x);if(c)out.push(...treeSteps(c,seen));else out.push(x);});return out;}
+function goalRows(g,P){
+  const seen={};
+  return treeSteps(g).filter(s=>s.kind==='skill').map(s=>{
+    const n=s.skill,lv=Number(s.level),target=skillTarget(s),have=eff(n),need=Math.max(0,target-have),p=P.calc(n);
+    return {n,lv,target,have,need,p,weeks:need===0?0:(p>0?need/p:Infinity)};
+  }).filter(r=>{const k=r.n+r.lv;if(seen[k])return false;seen[k]=1;return true;});
+}
+function addWeeks(w){return new Date(Date.now()+w*WEEK_MS);}
+function mon(d){return d.toLocaleDateString(undefined,{month:'short',year:'numeric'});}
+const pendingGoalDelete={v:null};const goalBusy={};let pendingStepRemove=null;
+async function saveSteps(g,steps){
+  if(goalBusy[g.id])return;goalBusy[g.id]=true;
+  try{await db.doc('goals/'+g.id).update({steps});}catch(e){renderGoals();}
+  finally{goalBusy[g.id]=false;}
+}
+async function removeGoal(g){
+  try{
+    if(g.parent){const par=goalById(g.parent.goal);if(par)await saveSteps(par,stepsOf(par).map(x=>x.sub===g.id?Object.assign({},x,{sub:null}):x));}
+    await db.doc('goals/'+g.id).delete();
+  }catch(e){renderGoals();}
+}
+function goalsNewestFirst(){return GOALS.slice().sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));}
+function jumpToGoal(id){const c=$('goal-'+id);if(!c)return;c.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});c.classList.add('flash');setTimeout(()=>c.classList.remove('flash'),1600);const h=c.querySelector('h3');if(h){h.tabIndex=-1;h.focus({preventScroll:true});}}
+function stepList(g){
+  const steps=stepsOf(g);const ol=el('ol',{cls:'steps'});
+  steps.forEach((s,k)=>{
+    const child=subOf(s),done=stepDone(s),cid='st-'+g.id+'-'+k;
+    const cb=el('input',{type:'checkbox',id:cid});cb.checked=done;
+    let meta=null;
+    if(child){cb.disabled=true;const cs=stepsOf(child);meta=el('span',{cls:'smeta',id:cid+'-m',text:'Its own goal · '+cs.filter(x=>stepDone(x)).length+' of '+cs.length+' steps done · checks off by itself'});cb.setAttribute('aria-describedby',cid+'-m');}
+    else if(s.kind==='skill'){cb.disabled=true;meta=el('span',{cls:'smeta',id:cid+'-m',text:done?'Reached':fmt(eff(s.skill))+' of '+fmt(skillTarget(s))+' XP · checks off by itself'});cb.setAttribute('aria-describedby',cid+'-m');}
+    else cb.addEventListener('change',()=>{const next=steps.map((x,j)=>j===k?Object.assign({},x,{done:cb.checked,doneAt:cb.checked?Date.now():null}):x);saveSteps(g,next);});
+    const acts=el('span',{cls:'sacts'});
+    if(child)acts.append(el('button',{cls:'link show',type:'button',text:'Go to goal',onclick:()=>jumpToGoal(child.id)}));
+    else if(s.kind!=='skill'&&!done)acts.append(el('button',{cls:'link show',type:'button',text:'Make it a goal',onclick:()=>breakDown(g,s)}));
+    const rkey=g.id+'/'+(s.id||k);
+    acts.append(el('button',{cls:'link srm',type:'button',text:pendingStepRemove===rkey?'Confirm remove':'Remove','aria-label':'Remove step: '+stepLabel(s),onclick:()=>{
+      if(pendingStepRemove!==rkey){pendingStepRemove=rkey;renderGoals();return;}
+      pendingStepRemove=null;saveSteps(g,steps.filter((x,j)=>j!==k));}}));
+    ol.append(el('li',{cls:'step'+(done?' done':'')+((s.kind==='skill'||child)?' auto':'')},[cb,el('label',{for:cid},[el('span',{cls:'stext',text:stepLabel(s)}),meta]),acts]));
+  });
+  return ol;
+}
+function addStepRow(g){
+  const addIn=el('input',{type:'text',id:'add-'+g.id,placeholder:'Add a step','aria-label':'New step for '+g.name});
+  const addStep=()=>{const t=addIn.value.trim();if(!t)return;saveSteps(g,stepsOf(g).concat([{id:'s'+Date.now().toString(36),kind:'task',text:t.slice(0,200),done:false}]));addIn.value='';};
+  addIn.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addStep();}});
+  return el('div',{cls:'addstep'},[addIn,el('button',{type:'button',text:'Add',onclick:addStep})]);
+}
+function renderGoals(){
+  const box=$('goals');box.replaceChildren();
+  const list=goalsNewestFirst();
+  if(!list.length)box.append(el('p',{cls:'empty',text:'No goals yet. Add one above and break it into steps.'}));
+  list.forEach(g=>{
+    const steps=stepsOf(g);const doneN=steps.filter(x=>stepDone(x)).length;const par=g.parent?goalById(g.parent.goal):null;
+    const del=el('button',{cls:'link',type:'button',text:pendingGoalDelete.v===g.id?'Confirm delete':'Delete goal',onclick:()=>{if(pendingGoalDelete.v===g.id){pendingGoalDelete.v=null;removeGoal(g);}else{pendingGoalDelete.v=g.id;renderGoals();}}});
+    box.append(el('article',{cls:'panel goal'+(goalDone(g)?' gdone':''),id:'goal-'+g.id},[
+      par?el('p',{cls:'gparent'},[document.createTextNode('A step of '),el('button',{cls:'link show',type:'button',text:par.name,onclick:()=>jumpToGoal(par.id)})]):null,
+      el('div',{cls:'goal-head'},[el('h3',{text:g.name}),del]),
+      g.why?el('p',{cls:'why',text:g.why}):null,
+      el('p',{cls:'gcount',text:goalDone(g)?'Done':doneN+' of '+steps.length+' steps done'}),
+      stepList(g),
+      addStepRow(g)
+    ]));
+  });
+}
+const MOOD_W={1:-4,2:-.5,3:0,4:.5,5:1};
+function noRec(){return (BASE&&BASE.noRec)||[];}
+function recommend(){
+  const now=new Date(),t=today(),from=iso(new Date(now-13*864e5));
+  const sk={},byDay={};
+  DAYS.forEach(d=>{if(d.date<from||d.date>t)return;(d.entries||[]).forEach(e=>(e.items||[]).forEach(i=>{const h=Number(i.hours)||0;if(h<=0)return;
+    const x=sk[i.skill]=sk[i.skill]||{hours:0,last:'',days:{},rH:0,rSum:0,good:false};x.hours+=h;if(d.date>x.last)x.last=d.date;
+    const m=Number(i.mood);if(!(m>=1&&m<=5))return;
+    const dd=x.days[d.date]=x.days[d.date]||{h:0,w:0,ex:0,fr:0,by:{}};dd.h+=h;dd.w+=h*MOOD_W[m];if(m===5)dd.ex+=h;if(m===1)dd.fr+=h;dd.by[m]=(dd.by[m]||0)+h;
+    x.rH+=h;x.rSum+=h*m;if(m>=4)x.good=true;
+    const g=byDay[d.date]=byDay[d.date]||{h:0,fr:0,frSkills:new Set()};g.h+=h;if(m===1){g.fr+=h;g.frSkills.add(i.skill);}
+  }));});
+  const names=allSkills().filter(n=>!noRec().includes(n));if(!names.length)return [];
+  const lastRated=Object.keys(byDay).sort().pop();
+  let rough=null;
+  if(lastRated&&(parseDay(t)-parseDay(lastRated))/864e5<=2){const g=byDay[lastRated];if(g.fr>=g.h/2)rough=g;}
+  const maxH=Math.max(1e-9,...names.map(n=>sk[n]?sk[n].hours:0));
+  const tie=n=>{let h=0;for(const c of t+n)h=(h*31+c.charCodeAt(0))>>>0;return (h%1000)/1e5;};
+  return names.map(n=>{
+    const x=sk[n]||{hours:0,last:'',days:{},rH:0,rSum:0,good:false};let score=tie(n);const why=[];
+    const days=x.last?Math.floor((parseDay(t)-parseDay(x.last))/864e5):14;
+    score+=Math.min(days,13)/13*2;
+    score+=(1-x.hours/maxH);
+    if(!x.last)why.push('Not logged in the past 14 days.');
+    else if(days===0)why.push('You logged it today.');else why.push('Last logged '+(days===1?'yesterday':days+' days ago')+', '+dur(x.hours)+' in the past two weeks.');
+    const rated=Object.keys(x.days).sort().reverse();
+    if(rated.length){
+      let w=0,sum=0;rated.forEach((dt,k)=>{const wt=Math.pow(.5,k),dd=x.days[dt];w+=wt;sum+=wt*(dd.w/dd.h);});
+      const avg=sum/w;score+=avg;
+      const top=x.days[rated[0]];const main=Number(Object.keys(top.by).sort((p,q)=>top.by[q]-top.by[p])[0]);
+      const label=(Object.keys(top.by).length>1?'mostly ':'')+MOODS[main-1].toLowerCase();
+      const recent=(parseDay(t)-parseDay(rated[0]))/864e5<=2;
+      const flow=recent&&top.ex>=top.h/2&&top.fr===0;
+      if(flow){score+=2.5;why.push('Your last day on it was '+label+', so you may be in a flow. Keep it going.');}
+      else if(avg>=.4)why.push('It\'s felt good lately. Your last day on it was '+label+'.');
+      else if(avg<=-.4)why.push('It\'s felt rough lately. Your last day on it was '+label+'.');
+      else why.push('Your last day on it felt '+label+'.');
+    }
+    if(days===0)score-=2;
+    if(rough&&!rough.frSkills.has(n)&&x.rH&&x.rSum/x.rH>=3.5&&x.good){score+=2.5;why.unshift('Your last rated day was mostly frustrating, and this one has felt satisfying lately. A good one to reset with.');}
+    return {n,score,why};
+  }).sort((p,q)=>q.score-p.score);
+}
+function renderRec(){
+  const box=$('rec');box.replaceChildren();
+  const list=recommend();if(!list.length){box.append(el('p',{cls:'empty',text:'No skills to pick from yet.'}));return;}
+  const top=list[0];
+  box.append(
+    el('div',{cls:'rec-top'},[el('span',{cls:'dot',style:'background:var(--l'+(tier(eff(top.n))+1)+')'}),el('span',{cls:'rec-name',text:top.n}),el('span',{cls:'rec-lv',text:'Level '+(tier(eff(top.n))+1)+', '+TIERS[tier(eff(top.n))][1]})]),
+    el('ul',{cls:'rec-why'},top.why.slice(0,4).map(w=>el('li',{text:w}))),
+    list.length>1?el('p',{cls:'rec-alt',text:'Also worth time: '+list.slice(1,3).map(x=>x.n).join(' and ')+'.'}):null,
+    el('p',{cls:'note',text:'Every skill is considered, using your last 14 days: skills you haven\'t touched and skills with fewer hours rank higher (ties between untouched skills rotate day to day), and how your recent sessions felt counts the most. Frustrating pushes a skill down hard. Disappointing and Satisfying nudge it by the same small amount in opposite directions, and Neutral does nothing. Exciting counts a little more, and if at least half your rated hours on a skill in your latest day with it were Exciting (with none Frustrating), within the last two days, it gets a big boost to keep the flow going. If at least half your rated hours on your latest rated day were Frustrating, skills that have felt Satisfying or better in the same 14 days get a big boost for the next two days. Each day\'s ratings for a skill combine into one, weighted by hours, and your latest day weighs more than older ones. It updates as you log.'})
+  );
+}
+let LP={skill:null,level:null,date:''};
+try{const v=JSON.parse(localStorage.getItem('lvlplan')||'null');if(v)LP=Object.assign(LP,v);}catch(e){}
+function saveLP(){try{localStorage.setItem('lvlplan',JSON.stringify(LP));}catch(e){}}
+function renderLevelPlan(P){
+  const names=allSkills().sort((a,b)=>lifetime(b)-lifetime(a));if(!names.length)return;
+  if(!LP.skill||!names.includes(LP.skill))LP.skill=names.find(n=>P.calc(n)>0)||sel||names[0];
+  const ss=$('lpSkill');ss.replaceChildren(...names.map(n=>{const o=el('option',{value:n,text:n+' (L'+(tier(eff(n))+1)+')'});if(n===LP.skill)o.selected=true;return o;}));
+  const v=eff(LP.skill),cur=tier(v)+1;
+  if(!LP.level||LP.level<=cur)LP.level=Math.min(10,cur+1);
+  const ls=$('lpLevel');ls.replaceChildren();
+  for(let l=cur+1;l<=10;l++){const o=el('option',{value:String(l),text:'Level '+l+', '+TIERS[l-1][1]+' ('+fmt(TIERS[l-1][0])+' XP)'});if(l===LP.level)o.selected=true;ls.append(o);}
+  $('lpDate').value=LP.date||'';
+  const out=$('lpOut');out.replaceChildren();
+  if(cur>=10){out.append(el('p',{cls:'empty',text:LP.skill+' is already at the top level.'}));return;}
+  const need=TIERS[LP.level-1][0]-v,p=P.calc(LP.skill),r=rate(LP.skill);
+  const atPace=p>0?addWeeks(need/p):null;
+  const stats=[
+    el('div',{cls:'stat'},[el('div',{cls:'n',text:fmt(need)+' XP'}),el('div',{cls:'l',text:'Still needed, about '+dur(need/r)+' of work'})]),
+    el('div',{cls:'stat'},[el('div',{cls:'n',text:atPace?mon(atPace):'Not moving'}),el('div',{cls:'l',text:p>0?'At your pace of '+dur(p/r)+'/wk':'Nothing logged in the last 7 days'})])
+  ];
+  if(LP.date){
+    const wks=(parseDay(LP.date)-new Date())/WEEK_MS;
+    if(wks<=0)stats.push(el('div',{cls:'stat'},[el('div',{cls:'n late',text:'Date passed'}),el('div',{cls:'l',text:'Pick a date in the future'})]));
+    else{const q=need/wks;stats.push(el('div',{cls:'stat'},[el('div',{cls:'n'+(q>p?' late':''),text:dur(q/r)+'/wk'}),el('div',{cls:'l',text:'Needed to reach it by '+parseDay(LP.date).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})+(q>p?', more than your current pace':', within your current pace')})]));}
+  }
+  out.append(el('div',{cls:'eta',style:'margin:0'},stats));
+}
+$('lpSkill').addEventListener('change',()=>{LP.skill=$('lpSkill').value;LP.level=null;saveLP();renderLevelPlan(paceInfo());});
+$('lpLevel').addEventListener('change',()=>{LP.level=Number($('lpLevel').value);saveLP();renderLevelPlan(paceInfo());});
+$('lpDate').addEventListener('change',()=>{LP.date=$('lpDate').value||'';saveLP();renderLevelPlan(paceInfo());});
+function renderLevelUps(P){
+  renderLevelPlan(P);
+  const box=$('levelups');box.replaceChildren();
+  const rows=[],still=[];
+  allSkills().forEach(n=>{
+    const v=eff(n),t=tier(v);if(t>=9)return;
+    const next=TIERS[t+1][0],need=next-v,p=P.calc(n);
+    if(p>0)rows.push({n,t,need,p,weeks:need/p});else still.push(n);
+  });
+  rows.sort((a,b)=>a.weeks-b.weeks);
+  if(!rows.length){box.append(el('p',{cls:'empty',text:'Nothing logged in the last 7 days, so no level-ups are on the way yet.'}));}
+  else{
+    const g=el('div',{cls:'req lvl4'},[el('div',{cls:'h',text:'Skill'}),el('div',{cls:'h',text:'Next level'}),el('div',{cls:'h hide',text:'Your pace'}),el('div',{cls:'h',text:'Level up by'})]);
+    rows.forEach(r=>{
+      const d=addWeeks(r.weeks);const soon=r.weeks<=1;
+      g.append(el('div',{cls:'c'},[el('span',{cls:'dot',style:'background:var(--l'+(r.t+1)+')'}),el('button',{cls:'link lp-pick',type:'button',text:r.n,title:'Plan this skill',onclick:()=>{LP.skill=r.n;LP.level=null;saveLP();renderLevelPlan(paceInfo());$('lpSkill').focus();}})]),
+        el('div',{cls:'c'},[el('span',{cls:'dot',style:'background:var(--l'+(r.t+2)+')'}),document.createTextNode('L'+(r.t+2)+' · '+fmt(r.need)+' XP to go')]),
+        el('div',{cls:'c hide',text:dur(r.p/rate(r.n))+'/wk'}),
+        el('div',{cls:'c'+(soon?' bn':''),text:r.weeks<1/7?'Today':soon?d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'}):r.weeks<9?d.toLocaleDateString(undefined,{month:'short',day:'numeric'}):mon(d)}));
+    });
+    box.append(g);
+  }
+  if(still.length)box.append(el('p',{cls:'note',style:'margin-top:.75rem',text:'Not moving this week: '+still.sort().join(', ')+'.'}));
+}
+function renderPace(){
+  renderRec();
+  const P=paceInfo();const from=P.from;
+  const by={};const days=new Set();
+  DAYS.forEach(d=>{if(d.date<=from)return;(d.entries||[]).forEach(e=>(e.items||[]).forEach(i=>{const h=Number(i.hours)||0;if(h<=0)return;by[i.skill]=(by[i.skill]||0)+h;days.add(d.date);}));});
+  const total=Object.values(by).reduce((a,b)=>a+b,0);
+  $('weekHours').textContent=total?dur(total):'0';
+  $('weekDays').textContent=days.size+' of 7';
+  const list=$('weekList');list.replaceChildren();
+  const keys=Object.keys(by).sort((a,b)=>by[b]-by[a]);const max=Math.max(1e-9,...keys.map(k=>by[k]));
+  if(!keys.length)list.append(el('p',{cls:'empty',text:'Nothing logged in the last 7 days. Log today\'s work to get moving again.'}));
+  keys.forEach(k=>list.append(el('div',{cls:'prow'},[
+    el('span',{},[el('span',{cls:'dot',style:'background:var(--l'+(tier(eff(k))+1)+')'}),document.createTextNode(k)]),
+    el('span',{cls:'bar','aria-hidden':'true'},[el('span',{cls:'fill',style:'width:'+Math.round(by[k]/max*100)+'%;background:var(--signal)'})]),
+    el('span',{cls:'pval',text:dur(by[k])})])));
+  renderLevelUps(P);
+  const box=$('timelines');box.replaceChildren();
+  const tops=goalsNewestFirst();
+  if(!tops.length)box.append(el('p',{cls:'empty',text:'Add a goal on the Goals tab to see when you\'ll reach it.'}));
+  tops.forEach(g=>{
+    const leaves=treeSteps(g);const tasksLeft=leaves.filter(s=>s.kind!=='skill'&&!s.done).length;
+    const open=goalRows(g,P).filter(r=>r.need);
+    const tasksNote=el('p',{cls:'why',style:'margin:.5rem 0 0',text:tasksLeft?tasksLeft+' other step'+(tasksLeft>1?'s':'')+' to check off on the Goals tab, including steps of goals made from its steps. Those depend on what you finish, not on hours, so they aren\'t timed here.':'No other steps left.'});
+    if(!open.length){box.append(el('article',{cls:'panel goal'},[el('h3',{text:g.name}),el('p',{cls:'why',style:'margin:.5rem 0 0',text:'No skill levels left to reach for this goal.'}),tasksNote]));return;}
+    const worst=open.reduce((a,b)=>b.weeks>a.weeks?b:a);
+    const aimWeeks=g.aim?Math.max(.5,(parseDay(g.aim)-new Date())/WEEK_MS):null;
+    const req=el('div',{cls:'req req3'},[el('div',{cls:'h',text:'Skill level'}),el('div',{cls:'h',text:'Your pace'}),el('div',{cls:'h',text:aimWeeks?'Needed for your date':'Ready by'})]);
+    open.sort((a,b)=>b.weeks-a.weeks).forEach(r=>{
+      let third;
+      if(aimWeeks){const q=r.need/aimWeeks;third=el('span',{cls:q>r.p?'late':'',text:dur(q/rate(r.n))+'/wk'});}
+      else third=el('span',{text:isFinite(r.weeks)?mon(addWeeks(r.weeks)):'Not moving'});
+      req.append(el('div',{cls:'c'+(r===worst?' bn':'')},[el('span',{cls:'dot',style:'background:var(--l'+(tier(r.have)+1)+')'}),document.createTextNode(r.n+' L'+r.lv)]),
+        el('div',{cls:'c',text:r.p>0?dur(r.p/rate(r.n))+'/wk':'None'}),
+        el('div',{cls:'c'},[third]));
+    });
+    const aim=el('input',{type:'date',id:'aim-'+g.id});aim.value=g.aim||'';
+    aim.addEventListener('change',()=>{db.doc('goals/'+g.id).update({aim:aim.value||''}).catch(()=>{});});
+    box.append(el('article',{cls:'panel goal'},[
+      el('h3',{text:g.name}),
+      el('div',{cls:'eta',style:'margin-top:.75rem'},[
+        el('div',{cls:'stat'},[el('div',{cls:'n',text:isFinite(worst.weeks)?mon(addWeeks(worst.weeks)):'On hold'}),el('div',{cls:'l',text:'Skill levels reached, at this pace'})])
+      ]),
+      req,
+      el('label',{cls:'aim',for:'aim-'+g.id},[document.createTextNode('Aim for a date'),aim,el('span',{text:g.aim?'Red means your pace is below what that date needs.':'to see how much time a week each skill needs.'})]),
+      tasksNote
+    ]));
+  });
+  $('paceNote').textContent='Pace is the time you logged for each skill over the last 7 days, including today. A skill with nothing logged shows "Not moving".';
+}
+
+// ---------- logging ----------
+let draft=[];
+function skillSelect(value,id){
+  const s=el('select',{id});const opts=allSkills();if(value&&!opts.includes(value))opts.push(value);
+  opts.sort().forEach(n=>{const o=el('option',{value:n,text:n+(BASE&&!BASE.skills[n]&&!logItems().some(i=>i.skill===n)?' (new)':'')});if(n===value)o.selected=true;s.append(o);});
+  return s;
+}
+const MOODS=['Frustrating','Disappointing','Neutral','Satisfying','Exciting'];
+function renderDraft(){
+  $('draftSum').hidden=!$('draftSum').textContent;
+  const box=$('draftRows');box.replaceChildren();
+  draft.forEach((it,k)=>{
+    const s=skillSelect(it.skill,'dskill-'+k);s.setAttribute('aria-label','Skill');s.onchange=()=>{it.skill=s.value;};
+    const h=el('input',{type:'number',min:'0',step:'0.25',id:'dhours-'+k,'aria-label':'Hours'});h.value=it.hours;h.oninput=()=>{it.hours=h.value;};
+    const nt=el('input',{type:'text',id:'dnote-'+k,cls:'dnote','aria-label':'Detail (optional)',placeholder:'Detail (optional)'});nt.value=it.note||'';nt.oninput=()=>{it.note=nt.value;};
+    let mood=el('span',{cls:'dmood'});
+    if(it.manual){mood=el('select',{id:'dmood-'+k,cls:'dmood','aria-label':'How it felt (optional)'});[['','How it felt (optional)'],...MOODS.map((m,j)=>[String(j+1),m])].forEach(([v,t])=>{const o=el('option',{value:v,text:t});if(String(it.mood||'')===v)o.selected=true;mood.append(o);});mood.onchange=()=>{it.mood=mood.value?Number(mood.value):null;};}
+    box.append(el('div',{cls:'draft-row'},[s,h,mood,nt,el('button',{cls:'link',type:'button','aria-label':'Remove',text:'Remove',onclick:()=>{draft.splice(k,1);renderDraft();}})]));
+  });
+}
+function setStatus(id,msg,err){const s=$(id);s.textContent=msg||'';s.classList.toggle('err',!!err);}
+function freshDraft(){draft=[{skill:sel,hours:1,note:'',manual:true,mood:null}];$('draftSum').textContent='';renderDraft();}
+$('addRowBtn').onclick=()=>{draft.push({skill:(draft.length?draft[draft.length-1].skill:sel),hours:0.5,note:'',manual:true,mood:null});renderDraft();};
+let editing=null;
+function setEditing(v){editing=v;$('saveBtn').textContent=v?'Save changes':'Save entry';$('discardBtn').textContent=v?'Cancel edit':'Discard';}
+function editEntry(date,e){
+  setEditing({date,id:e.id,at:e.at||Date.now()});
+  $('logText').value=e.text||'';$('logDate').value=date;fillProjectSelect(e.project);$('logProject').value=e.project||'';onProjectPick(e.id);if(e.project&&e.progress!=null)$('logPct').value=e.progress;
+  draft=(e.items||[]).map(i=>({skill:i.skill,hours:Number(i.hours)||0,note:i.note||'',manual:true,mood:i.mood||null}));
+  $('draftSum').textContent='Editing your entry from '+niceDay(date)+'. Change the hours, the skill, how it felt, or the day, then save.';
+  renderDraft();showTab('log');setStatus('logStatus','');dateHint();
+}
+function dateHint(){
+  const d=$('logDate').value;
+  if(BASE&&d&&d<BASE.asOf&&!editing)setStatus('logStatus','Your starting XP already covers everything before '+niceDay(BASE.asOf)+'. Only add things you left out, so nothing counts twice.');
+  else if($('logStatus').textContent.startsWith('Your starting XP'))setStatus('logStatus','');
+}
+$('logDate').addEventListener('change',dateHint);
+$('discardBtn').onclick=()=>{if(editing){$('logText').value='';$('logDate').value=today();$('logProject').value='';onProjectPick();}setEditing(null);freshDraft();setStatus('logStatus','');};
+$('saveBtn').onclick=async()=>{
+  const items=draft.map(i=>{const o={skill:i.skill,hours:Math.round(Number(i.hours)*100)/100,note:i.note||''};if(i.manual&&i.mood>=1&&i.mood<=5)o.mood=i.mood;return o;}).filter(i=>i.skill&&i.hours>0);
+  if(!items.length){setStatus('logStatus','Add at least one skill with hours above zero.',true);return;}
+  const date=$('logDate').value||today();
+  $('saveBtn').disabled=true;setStatus('logStatus','Saving…');
+  try{
+    const text=$('logText').value.trim().slice(0,4000);const ed=editing;
+    const proj=$('logProject').value||null;const pv=$('logPct').value;const progress=proj&&pv!==''?Math.max(0,Math.min(100,Math.round(Number(pv)))):null;const extra=proj?{project:proj,progress}:{};
+    if(ed&&ed.date!==date){
+      const oref=db.doc('days/'+ed.date);const osnap=await oref.get();
+      if(osnap.exists){const left=(osnap.data().entries||[]).filter(x=>x.id!==ed.id);if(left.length)await oref.set({date:ed.date,entries:left});else await oref.delete();}
+    }
+    const ref=db.doc('days/'+date);const snap=await ref.get();
+    let entries=snap.exists?[...((snap.data().entries)||[])]:[];
+    if(ed){const entry=Object.assign({id:ed.id,text,items,at:ed.at},extra);const k=entries.findIndex(x=>x.id===ed.id);if(k>=0)entries[k]=entry;else entries.push(entry);}
+    else entries.push(Object.assign({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),text,items,at:Date.now()},extra));
+    await ref.set({date,entries});
+    $('logText').value='';setEditing(null);$('logDate').value=today();$('logProject').value='';onProjectPick();freshDraft();askPersist();
+    setStatus('logStatus',(ed?'Updated ':'Saved to ')+niceDay(date)+'.');
+  }catch(e){setStatus('logStatus',e&&e.code==='quota_exceeded'?'Storage is full. Delete old entries to make room.':'Couldn\'t save. Try again.',true);}
+  finally{$('saveBtn').disabled=false;}
+};
+async function deleteEntry(date,id){
+  pendingDelete=null;
+  try{const ref=db.doc('days/'+date);const snap=await ref.get();if(!snap.exists)return;
+    const entries=(snap.data().entries||[]).filter(e=>e.id!==id);
+    if(entries.length)await ref.set({date,entries});else await ref.delete();
+  }catch(e){renderDiary();}
+}
+
+
+// ---------- projects ----------
+function projectById(id){return PROJECTS.find(x=>x.id===id);}
+function projectLog(id){
+  const out=[];DAYS.forEach(d=>(d.entries||[]).forEach(e=>{if(e.project===id)out.push({date:d.date,at:e.at||0,id:e.id,pct:e.progress,text:e.text||'',items:e.items||[]});}));
+  return out.sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:a.at-b.at);
+}
+function projectPct(id,exceptEntry){const l=projectLog(id).filter(x=>x.pct!=null&&x.id!==exceptEntry);return l.length?l[l.length-1].pct:null;}
+function fillProjectSelect(keep){
+  const s=$('logProject');const cur=keep!==undefined?keep:s.value;s.replaceChildren(el('option',{value:'',text:'None'}));
+  PROJECTS.filter(p=>!p.finished||p.id===cur).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).forEach(p=>s.append(el('option',{value:p.id,text:p.name})));
+  s.value=cur&&projectById(cur)?cur:'';
+}
+function onProjectPick(exceptEntry){
+  const id=$('logProject').value;$('logPctWrap').hidden=!id;
+  const last=id?projectPct(id,exceptEntry):null;
+  $('logPct').value='';$('logPct').placeholder=last!=null?String(last):'0';
+  $('logPctLast').textContent=id?(last!=null?'Last estimate: '+last+'%. Leave blank to skip this time.':'No estimate yet. Leave blank to skip.'):'';
+}
+$('logProject').addEventListener('change',()=>onProjectPick(editing?editing.id:undefined));
+$('pjAdd').onclick=async()=>{
+  const name=$('pjName').value.trim(),desc=$('pjDesc').value.trim();
+  if(!name){setStatus('pjStatus','Give the project a name.',true);return;}
+  $('pjAdd').disabled=true;
+  try{await db.collection('projects').doc('p'+Date.now().toString(36)).set({name:name.slice(0,100),description:desc.slice(0,2000),createdAt:Date.now(),finished:false});$('pjName').value='';$('pjDesc').value='';setStatus('pjStatus','Project added.');}
+  catch(e){setStatus('pjStatus','Couldn\'t add the project. Try again.',true);}
+  finally{$('pjAdd').disabled=false;}
+};
+let pjEditing=null,pjPendingDelete=null;
+function renderProjects(){
+  const box=$('projects');if(!box)return;box.replaceChildren();
+  const list=PROJECTS.slice().sort((a,b)=>(a.finished?1:0)-(b.finished?1:0)||(b.createdAt||0)-(a.createdAt||0));
+  if(!list.length){box.append(el('p',{cls:'empty',text:'No projects yet. Add what you\'re working on above.'}));return;}
+  list.forEach(p=>{
+    const log=projectLog(p.id);const pct=projectPct(p.id);
+    const hours={};let tot=0;log.forEach(x=>x.items.forEach(i=>{const h=Number(i.hours)||0;hours[i.skill]=(hours[i.skill]||0)+h;tot+=h;}));
+    const lastDay=log.length?log[log.length-1].date:null;
+    const card=el('article',{cls:'panel goal project'+(p.finished?' pdone':''),id:'proj-'+p.id});
+    if(pjEditing===p.id){
+      const n=el('input',{type:'text',id:'pjn-'+p.id});n.value=p.name;
+      const d=el('textarea',{id:'pjd-'+p.id,style:'min-height:4rem'});d.value=p.description||'';
+      card.append(el('label',{cls:'field',for:'pjn-'+p.id},[document.createTextNode('Project name'),n]),el('label',{cls:'field',for:'pjd-'+p.id,style:'margin-top:.6rem'},[document.createTextNode('What it is'),d]),
+        el('div',{cls:'row-actions',style:'margin-top:.75rem'},[el('button',{cls:'primary',type:'button',text:'Save',onclick:async()=>{if(!n.value.trim())return;try{await db.doc('projects/'+p.id).update({name:n.value.trim().slice(0,100),description:d.value.trim().slice(0,2000)});}catch(e){}pjEditing=null;renderProjects();fillProjectSelect();}}),el('button',{type:'button',text:'Cancel',onclick:()=>{pjEditing=null;renderProjects();}})]));
+      box.append(card);return;
+    }
+    const acts=el('div',{cls:'pj-acts'},[
+      el('button',{cls:'link show',type:'button',text:'Log work',onclick:()=>{showTab('log');fillProjectSelect(p.id);$('logProject').value=p.id;onProjectPick();$('logText').focus();}}),
+      el('button',{cls:'link',type:'button',text:'Edit',onclick:()=>{pjEditing=p.id;renderProjects();}}),
+      el('button',{cls:'link',type:'button',text:p.finished?'Reopen':'Mark finished',onclick:()=>db.doc('projects/'+p.id).update({finished:!p.finished,finishedAt:p.finished?null:Date.now()}).catch(()=>{})}),
+      el('button',{cls:'link',type:'button',text:pjPendingDelete===p.id?'Confirm delete':'Delete',onclick:()=>{if(pjPendingDelete===p.id){pjPendingDelete=null;db.doc('projects/'+p.id).delete().catch(()=>{});}else{pjPendingDelete=p.id;renderProjects();}}})
+    ]);
+    const hist=log.filter(x=>x.pct!=null);
+    card.append(
+      el('div',{cls:'goal-head'},[el('h3',{text:p.name}),p.finished?el('span',{cls:'pj-badge',text:'Finished'}):null]),
+      p.description?el('p',{cls:'why',text:p.description}):null,
+      el('div',{cls:'pj-prog'},[
+        el('span',{cls:'pj-pct',text:pct!=null?pct+'%':'–'}),
+        el('span',{cls:'bar','aria-hidden':'true'},[el('span',{cls:'fill',style:'width:'+(pct||0)+'%;background:var(--signal)'})]),
+      ]),
+      el('p',{cls:'gcount',text:(pct!=null?'Your latest estimate':'No estimate yet')+' · '+(tot?dur(tot)+' logged':'nothing logged yet')+(lastDay?' · last worked '+niceDay(lastDay):'')}),
+      Object.keys(hours).length?el('div',{cls:'chips'},Object.keys(hours).sort((a,b)=>hours[b]-hours[a]).map(k=>el('span',{cls:'chip',text:k+' · '+dur(hours[k])}))):null,
+      hist.length>1?el('p',{cls:'pj-hist',text:'Progress: '+hist.slice(-8).map(x=>parseDay(x.date).toLocaleDateString(undefined,{month:'short',day:'numeric'})+' '+x.pct+'%').join(' → ')}):null,
+      acts
+    );
+    box.append(card);
+  });
+}
+function projectsText(){
+  return PROJECTS.slice().sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).map(p=>{
+    const log=projectLog(p.id);const hist=log.filter(x=>x.pct!=null);let tot=0;const hrs={};log.forEach(x=>x.items.forEach(i=>{const h=Number(i.hours)||0;tot+=h;hrs[i.skill]=(hrs[i.skill]||0)+h;}));
+    return '- '+p.name+(p.finished?' (finished)':'')+': '+(p.description||'no description')+'\n    Progress estimates: '+(hist.map(x=>x.date+' '+x.pct+'%').join(', ')||'none yet')+'\n    Time logged: '+(tot?dur(tot)+' ('+Object.keys(hrs).map(k=>k+' '+dur(hrs[k])).join(', ')+')':'none')+
+      (log.length?'\n    Latest notes: '+log.slice(-3).map(x=>x.date+' "'+x.text.slice(0,160)+'"').join('; '):'');
+  }).join('\n');
+}
+
+// ---------- goals ----------
+let plan=null;
+function levelsText(){return allSkills().map(n=>{const v=eff(n);return '- '+n+': Level '+(tier(v)+1)+' ('+fmt(v)+' XP)';}).join('\n');}
+function makePlan(text,parent){
+  plan={name:text.slice(0,120),why:'',steps:[{kind:'task',text:''}],parent:parent?{goal:parent.goal.id,step:parent.step.id}:null};
+  renderPlan();setStatus('goalStatus',parent?'Break this step into smaller steps, then save it as its own goal.':'Add the steps, then save.');
+  $('plan').scrollIntoView({block:'nearest'});const f=$('pst-0');if(f)f.focus();
+}
+$('planBtn').onclick=()=>{const text=$('goalText').value.trim();if(!text){setStatus('goalStatus','Describe the goal first.',true);return;}makePlan(text,null);};
+function breakDown(g,s){
+  if(!s.id){s.id='s'+Date.now().toString(36);saveSteps(g,stepsOf(g).map(x=>x===s?s:x));}
+  $('goalStatus').scrollIntoView({block:'center'});
+  makePlan(s.text,{goal:g,step:s});
+}
+function renderPlan(){
+  $('plan').hidden=!plan;if(!plan)return;
+  $('planFor').textContent=plan.parent?'New goal from a step of “'+((goalById(plan.parent.goal)||{}).name||'a goal')+'”':'New goal';
+  $('planName').value=plan.name;$('planWhy').textContent=plan.why;$('planWhy').hidden=!plan.why;
+  const box=$('planRows');box.replaceChildren();
+  plan.steps.forEach((s,i)=>{
+    const rm=el('button',{cls:'link',type:'button',text:'Remove',onclick:()=>{plan.steps.splice(i,1);renderPlan();}});
+    if(s.kind==='skill'){
+      const ss=skillSelect(s.skill,'pls-'+i);ss.setAttribute('aria-label','Skill');ss.onchange=()=>{s.skill=ss.value;renderPlan();};
+      const inp=el('input',{type:'number',min:'1',max:'10',step:'1',id:'plv-'+i,'aria-label':'Level to reach in '+s.skill});inp.value=s.level;inp.oninput=()=>{s.level=Number(inp.value);};
+      box.append(el('div',{cls:'lp-skill'},[el('span',{},[document.createTextNode('Reach level in '),ss,el('span',{cls:'smeta',text:'Now Level '+(tier(eff(s.skill))+1)+'. Checks itself off.'})]),inp,rm]));
+    }else{
+      const inp=el('input',{type:'text',id:'pst-'+i,'aria-label':'Step '+(i+1)});inp.value=s.text;inp.oninput=()=>{s.text=inp.value;};
+      box.append(el('div',{cls:'plan-row plan-task'},[inp,rm]));
+    }
+  });
+  box.append(el('div',{cls:'row-actions'},[el('button',{type:'button',text:'Add a step',onclick:()=>{plan.steps.push({kind:'task',text:''});renderPlan();const last=$('pst-'+(plan.steps.length-1));if(last)last.focus();}}),
+    el('button',{type:'button',text:'Add a skill level',onclick:()=>{const n=sel;plan.steps.push({kind:'skill',skill:n,level:Math.min(10,tier(eff(n))+2)});renderPlan();}})]));
+}
+$('planName').oninput=()=>{if(plan)plan.name=$('planName').value;};
+$('planDiscard').onclick=()=>{plan=null;renderPlan();setStatus('goalStatus','');};
+$('planSave').onclick=async()=>{
+  const steps=(plan?plan.steps:[]).map((s,i)=>s.kind==='skill'?{id:'k'+i,kind:'skill',skill:s.skill,level:Math.max(1,Math.min(10,Math.round(Number(s.level)||1)))}:{id:'s'+i,kind:'task',text:String(s.text||'').trim().slice(0,200),done:false}).filter(s=>s.kind==='skill'||s.text);
+  if(!steps.length){setStatus('goalStatus','Keep at least one step.',true);return;}
+  $('planSave').disabled=true;
+  try{
+    const id='g'+Date.now().toString(36);const par=plan.parent;
+    await db.collection('goals').doc(id).set({name:(plan.name||'Goal').slice(0,120),why:plan.why,steps,aim:'',createdAt:Date.now(),parent:par||null});
+    if(par){const pg=goalById(par.goal);if(pg){await db.doc('goals/'+pg.id).update({steps:stepsOf(pg).map(x=>x.id===par.step?Object.assign({},x,{sub:id}):x)});}}
+    plan=null;renderPlan();if(!par)$('goalText').value='';setStatus('goalStatus',par?'Goal added at the top.':'Goal added at the top.');$('goals').firstElementChild&&$('goals').firstElementChild.scrollIntoView({block:'nearest'});
+  }catch(e){setStatus('goalStatus','Couldn\'t save. Try again.',true);}
+  finally{$('planSave').disabled=false;}
+};
+
+// ---------- tabs ----------
+const TABS=['skills','goals','projects','pace','diary','log','settings'];
+function showTab(name,focus){
+  if(!TABS.includes(name))name='skills';
+  TABS.forEach(t=>{const on=t===name;$('p-'+t).hidden=!on;const b=$('t-'+t);b.setAttribute('aria-selected',String(on));b.tabIndex=on?0:-1;});
+  if(name==='skills'&&chart)chart.resize();
+  if(name==='settings')renderSettings();
+  if(focus)$('t-'+name).focus();
+  try{history.replaceState(null,'','#'+name);}catch(e){}
+}
+document.querySelectorAll('.tabs [data-tab]').forEach(b=>{
+  b.addEventListener('click',()=>showTab(b.dataset.tab));
+  b.addEventListener('keydown',e=>{const i=TABS.indexOf(b.dataset.tab);const vis=TABS.filter(t=>!$('t-'+t).hidden);const j=vis.indexOf(TABS[i]);
+    if(e.key==='ArrowRight'){e.preventDefault();showTab(vis[(j+1)%vis.length],true);}
+    if(e.key==='ArrowLeft'){e.preventDefault();showTab(vis[(j-1+vis.length)%vis.length],true);}});
+});
+showTab((location.hash||'').slice(1));
+
+window.__chartReady=()=>{if(BASE)renderChart(allSkills().sort((a,b)=>lifetime(b)-lifetime(a)));};
+// ---------- local storage ----------
+const LS_KEY='skillsheet.v1';
+const clone=o=>o==null?o:JSON.parse(JSON.stringify(o));
+function loadStore(){try{const v=JSON.parse(localStorage.getItem(LS_KEY)||'null');return v&&typeof v==='object'?v:{};}catch(e){return {};}}
+let STORE=loadStore();
+const subs=new Set();
+function persist(){
+  try{localStorage.setItem(LS_KEY,JSON.stringify(STORE));}
+  catch(e){const err=new Error('quota');err.code='quota_exceeded';throw err;}
+}
+function emit(col){subs.forEach(s=>{if(s.col===col)s.fire();});}
+function emitAll(){['config','days','goals','projects'].forEach(emit);}
+function docRef(path){
+  const [c,id]=path.split('/');
+  const snap=()=>{const d=STORE[c]&&STORE[c][id];return {exists:!!d,id,data:()=>clone(d)};};
+  return {
+    async get(){return snap();},
+    async set(v){(STORE[c]=STORE[c]||{})[id]=clone(v);persist();emit(c);},
+    async update(v){const cur=STORE[c]&&STORE[c][id];if(!cur)throw new Error('missing');Object.assign(cur,clone(v));persist();emit(c);},
+    async delete(){if(STORE[c])delete STORE[c][id];persist();emit(c);},
+    onSnapshot(cb){const s={col:c,fire:()=>cb(snap())};subs.add(s);setTimeout(s.fire,0);return ()=>subs.delete(s);}
+  };
+}
+function colRef(c){
+  return {
+    doc:id=>docRef(c+'/'+id),
+    onSnapshot(cb){const s={col:c,fire:()=>{const m=STORE[c]||{};cb({docs:Object.keys(m).map(id=>({id,data:()=>clone(m[id])}))});}};subs.add(s);setTimeout(s.fire,0);return ()=>subs.delete(s);}
+  };
+}
+db={doc:docRef,collection:colRef};
+window.addEventListener('storage',e=>{if(e.key===LS_KEY){STORE=loadStore();emitAll();}});
+let persistAsked=false;
+function askPersist(){if(persistAsked)return;persistAsked=true;try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist();}catch(e){}}
+
+// ---------- setup ----------
+const SUGGESTED=Object.keys(DESC);
+let suSkills=[];
+function renderSetup(){
+  const box=$('suList');box.replaceChildren();
+  if(!suSkills.length)box.append(el('p',{cls:'empty',style:'margin:.25rem 0 0',text:'No skills yet. Add the first one below.'}));
+  suSkills.forEach((x,k)=>{
+    const cb=el('input',{type:'checkbox',id:'su-'+k});cb.checked=x.on;
+    const h=el('input',{type:'number',min:'0',step:'1',inputmode:'decimal',id:'suh-'+k,'aria-label':'Hours so far in '+x.name,placeholder:'0'});h.value=x.hours;h.oninput=()=>{x.hours=h.value;};
+    const row=el('div',{cls:'su-row'+(x.on?'':' off')},[cb,el('label',{for:'su-'+k},[el('span',{text:x.name}),DESC[x.name]?el('span',{cls:'su-desc',text:DESC[x.name]}):null]),el('span',{cls:'su-hours'},[h,document.createTextNode('hrs')])]);
+    cb.onchange=()=>{x.on=cb.checked;row.classList.toggle('off',!x.on);if(x.on)h.focus();};
+    box.append(row);
+  });
+}
+function addSetupSkill(){const n=$('suNew').value.trim().slice(0,60);if(!n)return;const ex=suSkills.find(x=>x.name.toLowerCase()===n.toLowerCase());if(ex)ex.on=true;else suSkills.push({name:n,on:true,hours:''});$('suNew').value='';renderSetup();}
+$('suAdd').onclick=addSetupSkill;
+$('suNew').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addSetupSkill();}});
+$('suStart').onclick=async()=>{
+  const picked=suSkills.filter(x=>x.on);
+  if(!picked.length){setStatus('suStatus','Pick at least one skill.',true);return;}
+  const y=new Date().getFullYear(),by=Number($('suBirth').value);
+  const skills={},last={};picked.forEach(x=>{skills[x.name]=[Math.max(0,Math.round(Number(x.hours)||0))];last[x.name]=y;});
+  try{await db.doc('config/baseline').set({asOf:today(),birthYear:by>1900&&by<=y?by:null,years:[y],skills,last,xpPerHour:{},noRec:[]});askPersist();sel=picked[0].name;freshDraft();showTab('log');}
+  catch(e){setStatus('suStatus','Couldn\'t save on this device. Check that the browser allows site storage.',true);}
+};
+function showSetup(on){
+  $('setup').hidden=!on;document.querySelector('.tabs').hidden=on;
+  document.querySelectorAll('.tab-panel').forEach(p=>{if(on)p.hidden=true;});
+  if(!on)showTab((location.hash||'').slice(1)||'skills');
+  if(on)renderSetup();
+}
+
+// ---------- settings ----------
+function renderRateRule(){
+  const r=Object.entries((BASE&&BASE.xpPerHour)||{}).filter(([,v])=>Number(v)>1);
+  $('rateRule').hidden=!r.length;
+  $('rateRule').textContent=r.length?r.map(([n,v])=>n+' earns '+(Number(v)===2?'double':v+'×')+' XP per hour').join('. ')+', set in Settings for narrower crafts that reach a working level faster.':'';
+}
+async function setBase(patch){
+  try{await db.doc('config/baseline').update(patch);setStatus('setStatus','Saved.');}
+  catch(e){setStatus('setStatus',e&&e.code==='quota_exceeded'?'Storage is full.':'Couldn\'t save. Try again.',true);}
+}
+let pendingSkillDelete=null;
+function renderSettings(){
+  if(!BASE)return;
+  const box=$('setSkills');box.replaceChildren();
+  const used=new Set(logItems().map(i=>i.skill));
+  allSkills().sort((a,b)=>a.localeCompare(b)).forEach((n,k)=>{
+    const arr=BASE.skills[n]||[];
+    const start=el('input',{type:'number',min:'0',step:'1',inputmode:'decimal',id:'ss-'+k,'aria-label':'Starting XP for '+n});start.value=arr.length?arr[arr.length-1]:0;
+    start.onchange=()=>{const v=Math.max(0,Math.round(Number(start.value)||0));const a=(BASE.skills[n]||[]).slice();if(a.length)a[a.length-1]=v;else a.push(v);const sk=Object.assign({},BASE.skills,{[n]:a});const last=Object.assign({},BASE.last||{});if(!last[n])last[n]=new Date().getFullYear();setBase({skills:sk,last});};
+    const rt=el('select',{id:'sr-'+k,'aria-label':'XP per hour for '+n});[1,1.5,2,3].forEach(v=>{const o=el('option',{value:String(v),text:v+'×'});if(rate(n)===v)o.selected=true;rt.append(o);});
+    rt.onchange=()=>{const x=Object.assign({},BASE.xpPerHour||{});const v=Number(rt.value);if(v===1)delete x[n];else x[n]=v;setBase({xpPerHour:x});};
+    const pk=el('input',{type:'checkbox',id:'sp-'+k});pk.checked=!noRec().includes(n);
+    pk.onchange=()=>{const r=new Set(noRec());if(pk.checked)r.delete(n);else r.add(n);setBase({noRec:[...r]});};
+    const canDel=!used.has(n);
+    const del=canDel?el('button',{cls:'link',type:'button',text:pendingSkillDelete===n?'Confirm remove':'Remove',onclick:()=>{if(pendingSkillDelete!==n){pendingSkillDelete=n;renderSettings();return;}pendingSkillDelete=null;const sk=Object.assign({},BASE.skills);delete sk[n];const x=Object.assign({},BASE.xpPerHour||{});delete x[n];setBase({skills:sk,xpPerHour:x,noRec:noRec().filter(v=>v!==n)});}}):null;
+    box.append(el('div',{cls:'set-row'},[
+      el('span',{cls:'set-name'},[el('span',{cls:'dot',style:'background:var(--l'+(tier(eff(n))+1)+')'}),document.createTextNode(n)]),
+      el('label',{cls:'field',for:'ss-'+k},[document.createTextNode('Starting XP'),start]),el('label',{cls:'field',for:'sr-'+k},[document.createTextNode('XP per hour'),rt]),
+      el('span',{cls:'set-pick'},[pk,el('label',{for:'sp-'+k,text:'In daily pick'}),del])
+    ]));
+  });
+  $('setBirth').value=BASE.birthYear||'';
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent),standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+  $('installTip').textContent=standalone?'':ios?'To use it like an app, open this page in Safari, tap Share, then Add to Home Screen.':'To use it like an app, use your browser\'s Install or Add to Home Screen option.';
+  $('installTip').hidden=!!standalone;
+}
+function addSkill(){
+  const n=$('setNew').value.trim().slice(0,60);if(!n||!BASE)return;
+  if(allSkills().some(x=>x.toLowerCase()===n.toLowerCase())){setStatus('setStatus','You already track '+n+'.',true);return;}
+  const last=Object.assign({},BASE.last||{},{[n]:new Date().getFullYear()});
+  setBase({skills:Object.assign({},BASE.skills,{[n]:[0]}),last});$('setNew').value='';
+}
+$('setAdd').onclick=addSkill;
+$('setNew').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addSkill();}});
+$('setBirth').addEventListener('change',()=>{const y=Number($('setBirth').value);setBase({birthYear:y>1900&&y<=new Date().getFullYear()?y:null});});
+
+// ---------- backup ----------
+$('exportBtn').onclick=()=>{
+  const blob=new Blob([JSON.stringify({app:'skill-tracker',format:1,exportedAt:new Date().toISOString(),data:STORE},null,1)],{type:'application/json'});
+  const a=el('a',{href:URL.createObjectURL(blob),download:'skill-tracker-backup-'+today()+'.json'});document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  setStatus('dataStatus','Backup downloaded.');
+};
+let importFrom=null;
+function pickImport(from){importFrom=from;$('importFile').value='';$('importFile').click();}
+$('importBtn').onclick=()=>pickImport('dataStatus');
+$('suRestore').onclick=()=>pickImport('suStatus');
+$('importFile').addEventListener('change',async()=>{
+  const f=$('importFile').files[0];if(!f)return;const where=importFrom||'dataStatus';
+  try{
+    const j=JSON.parse(await f.text());const d=j&&j.data;
+    if(!d||!d.config||!d.config.baseline||!d.config.baseline.skills)throw new Error('bad');
+    if(BASE&&where==='dataStatus'&&!confirm('Replace everything on this device with the backup from '+(j.exportedAt?new Date(j.exportedAt).toLocaleDateString():'this file')+'?'))return;
+    STORE={config:d.config,days:d.days||{},goals:d.goals||{},projects:d.projects||{}};persist();emitAll();askPersist();
+    setStatus(where,'Backup restored.');
+  }catch(e){setStatus(where,e&&e.code==='quota_exceeded'?'That backup is too big for this browser\'s storage.':'That file isn\'t a Skill Tracker backup.',true);}
+});
+let resetArmed=false;
+$('resetBtn').onclick=()=>{
+  if(!resetArmed){resetArmed=true;$('resetBtn').textContent='Yes, delete everything';setStatus('resetStatus','This can\'t be undone. Download a backup first if you might want it.',true);return;}
+  STORE={};try{localStorage.removeItem(LS_KEY);localStorage.removeItem('lvlseen');localStorage.removeItem('lvlplan');}catch(e){}
+  resetArmed=false;$('resetBtn').textContent='Delete all data';setStatus('resetStatus','');emitAll();
+};
+
+// ---------- boot ----------
+db.doc('config/baseline').onSnapshot(snap=>{
+  $('loadNote').hidden=true;
+  if(!snap.exists){BASE=null;DAYS=[];GOALS=[];PROJECTS=[];showSetup(true);return;}
+  const wasNew=!BASE;BASE=snap.data();
+  if(!allSkills().includes(sel))sel=allSkills().sort((a,b)=>lifetime(b)-lifetime(a))[0]||'';
+  if(wasNew){showSetup(false);freshDraft();}
+  renderAll();
+});
+db.collection('days').onSnapshot(q=>{DAYS=q.docs.map(x=>x.data()).filter(Boolean);if(BASE)renderAll();});
+db.collection('projects').onSnapshot(q=>{PROJECTS=q.docs.map(x=>Object.assign({id:x.id},x.data()));renderProjects();fillProjectSelect();if(BASE)renderDiary();});
+db.collection('goals').onSnapshot(q=>{GOALS=q.docs.map(x=>Object.assign({id:x.id},x.data()));if(BASE){renderGoals();renderPace();}});
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>BASE&&renderAll());}catch(e){}
+let currentDay=today();
+function checkDay(){
+  const t=today();if(t===currentDay)return;
+  if($('logDate').value===currentDay)$('logDate').value=t;
+  currentDay=t;if(BASE)renderAll();
+}
+setInterval(checkDay,60000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkDay();});
+window.addEventListener('focus',checkDay);
+</script>
+</body>
+</html>
