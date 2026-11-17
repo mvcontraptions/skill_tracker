@@ -22,3 +22,5 @@ What you can do:
 A single-page progressive web app in plain HTML, CSS and JavaScript, with no build step and no framework. Data lives in `localStorage`, a service worker caches the app for offline use, and charts use [Chart.js](https://www.chartjs.org) (MIT, bundled in `vendor/`).
 
 To run it locally, serve the folder with any static server, for example `python3 -m http.server`, then open `http://localhost:8000`.
+
+Vibe coded with Claude Opus.
