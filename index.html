@@ -223,7 +223,7 @@ label.field{display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:
 .su-row.off .su-hours{display:none}
 .su-add{display:flex;gap:.5rem;margin-top:.75rem}
 .su-add input{flex:1;min-width:0}
-.set-row{display:grid;grid-template-columns:minmax(0,1fr) 7rem 6.5rem minmax(0,11rem);gap:.75rem;align-items:end;padding:.65rem 0;border-top:1px solid var(--line);font-size:.9rem}
+.set-row{display:grid;grid-template-columns:minmax(0,1fr) 7rem minmax(0,11rem);gap:.75rem;align-items:end;padding:.65rem 0;border-top:1px solid var(--line);font-size:.9rem}
 .set-row input[type=number],.set-row select{width:100%}
 .set-row .field{font-size:.75rem;color:var(--ink-3)}
 .set-name{align-self:center}
@@ -237,7 +237,7 @@ label.field{display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:
 .lp-skill select{width:100%}
 @media (max-width:640px){
  .su-row{grid-template-columns:auto minmax(0,1fr)}.su-row .su-hours{grid-column:2}
- .set-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.set-row .set-name,.set-row .set-pick{grid-column:1/-1}
+ .set-row{grid-template-columns:minmax(0,1fr) 7rem}.set-row .set-pick{grid-column:1/-1}
 }
 </style>
 </head>
@@ -432,12 +432,6 @@ label.field{display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:
 <span class="status" id="setStatus" role="status"></span>
 </div>
 </section>
-<section aria-labelledby="setYouH">
-<h2 id="setYouH">You</h2>
-<div class="panel">
-<label class="field" for="setBirth" style="max-width:14rem">Year you were born<input type="number" id="setBirth" min="1900" max="2100" inputmode="numeric"></label>
-</div>
-</section>
 <section aria-labelledby="setDataH">
 <h2 id="setDataH">Your data</h2>
 <div class="panel set-block">
@@ -582,10 +576,10 @@ function renderChart(names){
   const s=series();
   if(chart)chart.destroy();
   const lab=s.monthly?s.years.map(k=>parseDay(k+'-01').toLocaleDateString(undefined,{month:'short',year:'2-digit'})):s.years.map(String);
-  $('chartCap').textContent=s.monthly?'Each point marks the end of a month. Select a skill below to highlight it.':'Each point marks the end of a year.'+(BASE.birthYear?' Hover a point to see your age that year.':'')+' Select a skill below to highlight it.';
+  $('chartCap').textContent=s.monthly?'Each point marks the end of a month. Select a skill below to highlight it.':'Each point marks the end of a year. Select a skill below to highlight it.';
   chart=new Chart($('chart'),{type:'line',data:{labels:lab,datasets:names.map(n=>({label:n,data:s.data[n],tension:.25,borderCapStyle:'round',borderJoinStyle:'round'}))},
     options:{responsive:true,maintainAspectRatio:false,animation:{duration:250},interaction:{mode:'index',intersect:false},
-      plugins:{legend:{display:false},tooltip:{filter:i=>i.dataset.label===sel,callbacks:{title:c=>{if(s.monthly||!BASE.birthYear)return c[0].label;const y=Number(c[0].label);return y+', age '+(y-BASE.birthYear-1)+'–'+(y-BASE.birthYear);},label:c=>c.dataset.label+': '+fmt(c.raw)+' XP'}}},
+      plugins:{legend:{display:false},tooltip:{filter:i=>i.dataset.label===sel,callbacks:{title:c=>c[0].label,label:c=>c.dataset.label+': '+fmt(c.raw)+' XP'}}},
       scales:{x:{grid:{display:false},ticks:{color:css('--ink-3'),autoSkip:false,maxRotation:45}},y:{grid:{color:css('--line')},ticks:{color:css('--ink-3'),callback:v=>Number(v).toLocaleString()}}}}});
   chart._series=s;updateChart();
 }
@@ -1099,9 +1093,9 @@ $('suNew').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault()
 $('suStart').onclick=async()=>{
   const picked=suSkills.filter(x=>x.on);
   if(!picked.length){setStatus('suStatus','Pick at least one skill.',true);return;}
-  const y=new Date().getFullYear(),by=0;
+  const y=new Date().getFullYear();
   const skills={},last={};picked.forEach(x=>{skills[x.name]=[Math.max(0,Math.round(Number(x.hours)||0))];last[x.name]=y;});
-  try{await db.doc('config/baseline').set({asOf:today(),birthYear:by>1900&&by<=y?by:null,years:[y],skills,last,xpPerHour:{},noRec:[]});askPersist();sel=picked[0].name;freshDraft();showTab('log');}
+  try{await db.doc('config/baseline').set({asOf:today(),years:[y],skills,last,xpPerHour:{},noRec:[]});askPersist();sel=picked[0].name;freshDraft();showTab('log');}
   catch(e){setStatus('suStatus','Couldn\'t save on this device. Check that the browser allows site storage.',true);}
 };
 function showSetup(on){
@@ -1115,7 +1109,7 @@ function showSetup(on){
 function renderRateRule(){
   const r=Object.entries((BASE&&BASE.xpPerHour)||{}).filter(([,v])=>Number(v)>1);
   $('rateRule').hidden=!r.length;
-  $('rateRule').textContent=r.length?r.map(([n,v])=>n+' earns '+(Number(v)===2?'double':v+'×')+' XP per hour').join('. ')+', set in Settings for narrower crafts that reach a working level faster.':'';
+  $('rateRule').textContent=r.length?r.map(([n,v])=>n+' earns '+(Number(v)===2?'double':v+'×')+' XP per hour').join('. ')+'.':'';
 }
 async function setBase(patch){
   try{await db.doc('config/baseline').update(patch);setStatus('setStatus','Saved.');}
@@ -1130,19 +1124,16 @@ function renderSettings(){
     const arr=BASE.skills[n]||[];
     const start=el('input',{type:'number',min:'0',step:'1',inputmode:'decimal',id:'ss-'+k,'aria-label':'Starting XP for '+n});start.value=arr.length?arr[arr.length-1]:0;
     start.onchange=()=>{const v=Math.max(0,Math.round(Number(start.value)||0));const a=(BASE.skills[n]||[]).slice();if(a.length)a[a.length-1]=v;else a.push(v);const sk=Object.assign({},BASE.skills,{[n]:a});const last=Object.assign({},BASE.last||{});if(!last[n])last[n]=new Date().getFullYear();setBase({skills:sk,last});};
-    const rt=el('select',{id:'sr-'+k,'aria-label':'XP per hour for '+n});[1,1.5,2,3].forEach(v=>{const o=el('option',{value:String(v),text:v+'×'});if(rate(n)===v)o.selected=true;rt.append(o);});
-    rt.onchange=()=>{const x=Object.assign({},BASE.xpPerHour||{});const v=Number(rt.value);if(v===1)delete x[n];else x[n]=v;setBase({xpPerHour:x});};
     const pk=el('input',{type:'checkbox',id:'sp-'+k});pk.checked=!noRec().includes(n);
     pk.onchange=()=>{const r=new Set(noRec());if(pk.checked)r.delete(n);else r.add(n);setBase({noRec:[...r]});};
     const canDel=!used.has(n);
     const del=canDel?el('button',{cls:'link',type:'button',text:pendingSkillDelete===n?'Confirm remove':'Remove',onclick:()=>{if(pendingSkillDelete!==n){pendingSkillDelete=n;renderSettings();return;}pendingSkillDelete=null;const sk=Object.assign({},BASE.skills);delete sk[n];const x=Object.assign({},BASE.xpPerHour||{});delete x[n];setBase({skills:sk,xpPerHour:x,noRec:noRec().filter(v=>v!==n)});}}):null;
     box.append(el('div',{cls:'set-row'},[
       el('span',{cls:'set-name'},[el('span',{cls:'dot',style:'background:var(--l'+(tier(eff(n))+1)+')'}),document.createTextNode(n)]),
-      el('label',{cls:'field',for:'ss-'+k},[document.createTextNode('Starting XP'),start]),el('label',{cls:'field',for:'sr-'+k},[document.createTextNode('XP per hour'),rt]),
+      el('label',{cls:'field',for:'ss-'+k},[document.createTextNode('Starting XP'),start]),
       el('span',{cls:'set-pick'},[pk,el('label',{for:'sp-'+k,text:'In daily pick'}),del])
     ]));
   });
-  $('setBirth').value=BASE.birthYear||'';
   const ios=/iphone|ipad|ipod/i.test(navigator.userAgent),standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
   $('installTip').textContent=standalone?'':ios?'To use it like an app, open this page in Safari, tap Share, then Add to Home Screen.':'To use it like an app, use your browser\'s Install or Add to Home Screen option.';
   $('installTip').hidden=!!standalone;
@@ -1155,7 +1146,6 @@ function addSkill(){
 }
 $('setAdd').onclick=addSkill;
 $('setNew').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addSkill();}});
-$('setBirth').addEventListener('change',()=>{const y=Number($('setBirth').value);setBase({birthYear:y>1900&&y<=new Date().getFullYear()?y:null});});
 
 // ---------- backup ----------
 $('exportBtn').onclick=()=>{
