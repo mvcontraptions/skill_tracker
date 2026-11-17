@@ -214,12 +214,12 @@ label.field{display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:
 @media (max-width:640px){.lp-controls{grid-template-columns:minmax(0,1fr)}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 .setup-list{display:flex;flex-direction:column;margin-top:1rem}
-.su-row{display:grid;grid-template-columns:auto minmax(0,1fr) 7rem;gap:.75rem;align-items:center;padding:.6rem 0;border-top:1px solid var(--line)}
+.su-row{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,16rem);gap:.75rem;align-items:center;padding:.6rem 0;border-top:1px solid var(--line)}
 .su-row input[type=checkbox]{width:1.1rem;height:1.1rem;accent-color:var(--signal);margin:0}
 .su-row label{cursor:pointer}
 .su-desc{display:block;font-size:.8rem;color:var(--ink-3)}
 .su-hours{display:flex;align-items:center;gap:.35rem;font-size:.8rem;color:var(--ink-3)}
-.su-hours input{width:5rem}
+.su-hours select{width:100%}
 .su-row.off .su-hours{display:none}
 .su-add{display:flex;gap:.5rem;margin-top:.75rem}
 .su-add input{flex:1;min-width:0}
@@ -1081,20 +1081,20 @@ function renderSetup(){
   const box=$('suList');box.replaceChildren();
   suSkills.forEach((x,k)=>{
     const cb=el('input',{type:'checkbox',id:'su-'+k});cb.checked=x.on;
-    const h=el('input',{type:'number',min:'0',step:'1',inputmode:'decimal',id:'suh-'+k,'aria-label':'Hours so far in '+x.name,placeholder:'0'});h.value=x.hours;h.oninput=()=>{x.hours=h.value;};
-    const row=el('div',{cls:'su-row'+(x.on?'':' off')},[cb,el('label',{for:'su-'+k},[el('span',{text:x.name}),DESC[x.name]?el('span',{cls:'su-desc',text:DESC[x.name]}):null]),el('span',{cls:'su-hours'},[h,document.createTextNode('hours so far')])]);
+    const h=el('select',{id:'suh-'+k,'aria-label':'Your level in '+x.name});TIERS.forEach((t,i)=>{const o=el('option',{value:String(i+1),text:'Level '+(i+1)+' · '+t[1]});if(Number(x.level||1)===i+1)o.selected=true;h.append(o);});h.onchange=()=>{x.level=Number(h.value);};
+    const row=el('div',{cls:'su-row'+(x.on?'':' off')},[cb,el('label',{for:'su-'+k},[el('span',{text:x.name}),DESC[x.name]?el('span',{cls:'su-desc',text:DESC[x.name]}):null]),el('span',{cls:'su-hours'},[h])]);
     cb.onchange=()=>{x.on=cb.checked;row.classList.toggle('off',!x.on);if(x.on)h.focus();};
     box.append(row);
   });
 }
-function addSetupSkill(){const n=$('suNew').value.trim().slice(0,60);if(!n)return;const ex=suSkills.find(x=>x.name.toLowerCase()===n.toLowerCase());if(ex)ex.on=true;else suSkills.push({name:n,on:true,hours:''});$('suNew').value='';renderSetup();}
+function addSetupSkill(){const n=$('suNew').value.trim().slice(0,60);if(!n)return;const ex=suSkills.find(x=>x.name.toLowerCase()===n.toLowerCase());if(ex)ex.on=true;else suSkills.push({name:n,on:true,level:1});$('suNew').value='';renderSetup();}
 $('suAdd').onclick=addSetupSkill;
 $('suNew').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addSetupSkill();}});
 $('suStart').onclick=async()=>{
   const picked=suSkills.filter(x=>x.on);
   if(!picked.length){setStatus('suStatus','Pick at least one skill.',true);return;}
   const y=new Date().getFullYear();
-  const skills={},last={};picked.forEach(x=>{skills[x.name]=[Math.max(0,Math.round(Number(x.hours)||0))];last[x.name]=y;});
+  const skills={},last={};picked.forEach(x=>{skills[x.name]=[TIERS[Math.max(1,Math.min(10,Number(x.level)||1))-1][0]];last[x.name]=y;});
   try{await db.doc('config/baseline').set({asOf:today(),years:[y],skills,last,xpPerHour:{},noRec:[]});askPersist();sel=picked[0].name;freshDraft();showTab('log');}
   catch(e){setStatus('suStatus','Couldn\'t save on this device. Check that the browser allows site storage.',true);}
 };
