@@ -223,7 +223,7 @@ label.field{display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:
 .su-row.off .su-hours{display:none}
 .su-add{display:flex;gap:.5rem;margin-top:.75rem}
 .su-add input{flex:1;min-width:0}
-.set-row{display:grid;grid-template-columns:minmax(0,1fr) 7rem minmax(0,11rem);gap:.75rem;align-items:end;padding:.65rem 0;border-top:1px solid var(--line);font-size:.9rem}
+.set-row{display:grid;grid-template-columns:minmax(0,1fr) 7rem 7rem;gap:.75rem;align-items:end;padding:.65rem 0;border-top:1px solid var(--line);font-size:.9rem}
 .set-row input[type=number],.set-row select{width:100%}
 .set-row .field{font-size:.75rem;color:var(--ink-3)}
 .set-name{align-self:center}
@@ -237,7 +237,7 @@ label.field{display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:
 .lp-skill select{width:100%}
 @media (max-width:640px){
  .su-row{grid-template-columns:auto minmax(0,1fr)}.su-row .su-hours{grid-column:2}
- .set-row{grid-template-columns:minmax(0,1fr) 7rem}.set-row .set-pick{grid-column:1/-1}
+ .set-row{grid-template-columns:minmax(0,1fr) 6rem 4.5rem}
 }
 </style>
 </head>
@@ -1124,14 +1124,12 @@ function renderSettings(){
     const arr=BASE.skills[n]||[];
     const start=el('input',{type:'number',min:'0',step:'1',inputmode:'decimal',id:'ss-'+k,'aria-label':'Starting XP for '+n});start.value=arr.length?arr[arr.length-1]:0;
     start.onchange=()=>{const v=Math.max(0,Math.round(Number(start.value)||0));const a=(BASE.skills[n]||[]).slice();if(a.length)a[a.length-1]=v;else a.push(v);const sk=Object.assign({},BASE.skills,{[n]:a});const last=Object.assign({},BASE.last||{});if(!last[n])last[n]=new Date().getFullYear();setBase({skills:sk,last});};
-    const pk=el('input',{type:'checkbox',id:'sp-'+k});pk.checked=!noRec().includes(n);
-    pk.onchange=()=>{const r=new Set(noRec());if(pk.checked)r.delete(n);else r.add(n);setBase({noRec:[...r]});};
     const canDel=!used.has(n);
     const del=canDel?el('button',{cls:'link',type:'button',text:pendingSkillDelete===n?'Confirm remove':'Remove',onclick:()=>{if(pendingSkillDelete!==n){pendingSkillDelete=n;renderSettings();return;}pendingSkillDelete=null;const sk=Object.assign({},BASE.skills);delete sk[n];const x=Object.assign({},BASE.xpPerHour||{});delete x[n];setBase({skills:sk,xpPerHour:x,noRec:noRec().filter(v=>v!==n)});}}):null;
     box.append(el('div',{cls:'set-row'},[
       el('span',{cls:'set-name'},[el('span',{cls:'dot',style:'background:var(--l'+(tier(eff(n))+1)+')'}),document.createTextNode(n)]),
       el('label',{cls:'field',for:'ss-'+k},[document.createTextNode('Starting XP'),start]),
-      el('span',{cls:'set-pick'},[pk,el('label',{for:'sp-'+k,text:'In daily pick'}),del])
+      el('span',{cls:'set-pick'},[del])
     ]));
   });
   const ios=/iphone|ipad|ipod/i.test(navigator.userAgent),standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
