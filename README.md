@@ -1,13 +1,14 @@
 # Skill Tracker
 
-A daily log of the time you put into your skills, turned into levels. Log the hours you put into any skill you choose and watch each one level up from Newcomer to Master.
-
-**Private by design:** there's no account and no server. Everything is saved on your own device and works offline. Install it on your phone from the browser like an app.
+The tool that helps you:
+1. See a visual chart of the development of your skills.
+2. Log skill development daily.
+3. Decide what skill to work on today.
+4. Start projects and goals to improve your skills.
 
 ## Features
 
-- **XP and levels:** 1 focused hour of making = 1 XP, across 10 levels from Newcomer (0 XP) to Master (10,000 XP). Narrower crafts can earn more XP per hour.
-- **Rust:** a skill left untouched for over a year slowly loses effective level, capped at 30%. Lifetime XP never disappears.
+- **Skills:** on a scale from 0XP (Newcomer) to 10000XP (Master). 1 XP is 1 hour of focused work. There are 10 levels in total.
 - **Work on today:** a daily pick based on your last 14 days. It favors skills you haven't touched and weighs how your recent sessions felt: frustration pushes a skill down, a run of exciting sessions keeps your flow going, and a frustrating day boosts skills that have felt good.
 - **Pace:** hours per skill over the last 7 days, when each skill will level up at that pace, and a planner for reaching any level by a date.
 - **Goals:** checklists of steps, including skill levels that check themselves off. Any step can become its own goal.
