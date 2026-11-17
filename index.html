@@ -245,7 +245,7 @@ label.field{display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:
 <main>
 <header>
 <h1>Skill Tracker</h1>
-<p class="sub">A daily log of the time you put into your skills, turned into levels. One XP is one focused hour of practice.</p>
+<p class="sub">Log your practice and watch your skills level up.</p>
 <div class="totals">
 <div><div class="n" id="totalXp">–</div><div class="l">Total XP</div></div>
 <div><div class="n" id="skillCount">–</div><div class="l">Skills tracked</div></div>
@@ -258,7 +258,7 @@ label.field{display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:
 <p class="notice" id="loadNote">Loading your data…</p>
 <section class="panel" id="setup" aria-labelledby="setupH" hidden>
 <h2 id="setupH">Set up your skill tracker</h2>
-<p class="sub" style="margin-top:0">Add the skills you want to track. For each one, estimate how many focused hours you've already put in. Rough is fine, and you can change it later in Settings. One hour is one XP.</p>
+<p class="sub" style="margin-top:0">Add the skills you want to track and roughly how many hours you've put in so far.</p>
 <label class="field" for="suBirth" style="margin-top:1rem;max-width:14rem">Year you were born (optional, shows your age on the chart)<input type="number" id="suBirth" min="1900" max="2100" inputmode="numeric"></label>
 <div class="setup-list" id="suList"></div>
 <div class="su-add"><input type="text" id="suNew" placeholder="Skill name" aria-label="New skill name"><button type="button" id="suAdd">Add</button></div>
@@ -267,7 +267,6 @@ label.field{display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:
 <button type="button" id="suRestore">Restore a backup</button>
 <span class="status" id="suStatus" role="status"></span>
 </div>
-<p class="note">Everything stays on this device. There's no account and nothing is uploaded.</p>
 </section>
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 <nav class="tabs" role="tablist" aria-label="Sections">
@@ -288,7 +287,7 @@ label.field{display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:
 <button id="scaleBtn" type="button">Log scale</button>
 </div>
 <div class="chart-wrap"><canvas id="chart" role="img" aria-label="Cumulative XP over time for each skill, with the selected skill highlighted."></canvas></div>
-<p class="caption" id="chartCap">Each point marks the end of a year. Select a skill below to highlight it.</p>
+<p class="caption" id="chartCap" hidden>Each point marks the end of a year. Select a skill below to highlight it.</p>
 </div>
 </section>
 <section aria-labelledby="levelsH">
@@ -316,7 +315,6 @@ label.field{display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:
 <div class="tab-panel" role="tabpanel" id="p-goals" aria-labelledby="t-goals" tabindex="-1">
 <section aria-labelledby="goalsH">
 <h2 id="goalsH">Goals</h2>
-<p class="sub" style="margin:-.25rem 0 1rem">Each goal broken into smaller goals. Check them off as you finish them. Skill levels tick themselves off when you reach them.</p>
 <div class="panel" style="margin-bottom:1rem">
 <label class="field" for="goalText">Add a goal
 <textarea id="goalText" style="min-height:3.5rem" placeholder="What do you want to achieve?"></textarea>
@@ -342,7 +340,6 @@ label.field{display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:
 <div class="tab-panel" role="tabpanel" id="p-projects" aria-labelledby="t-projects" tabindex="-1">
 <section aria-labelledby="projH">
 <h2 id="projH">Projects</h2>
-<p class="sub" style="margin:-.25rem 0 1rem">What you're working on right now. Pick a project when you log, and estimate how close to done it is each time.</p>
 <div class="panel" style="margin-bottom:1rem">
 <div class="pj-form">
 <label class="field" for="pjName">Project name<input type="text" id="pjName" placeholder="Name"></label>
@@ -432,7 +429,6 @@ label.field{display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:
 <section aria-labelledby="setSkillsH">
 <h2 id="setSkillsH">Skills</h2>
 <div class="panel">
-<p class="note" style="margin:0 0 .75rem">Starting XP is what you had before you began logging. XP per hour lets a narrower craft level up faster. Skills left out of the daily pick still count everywhere else.</p>
 <div id="setSkills"></div>
 <div class="su-add" style="margin-top:1rem"><input type="text" id="setNew" placeholder="New skill name" aria-label="New skill name"><button type="button" id="setAdd">Add skill</button></div>
 <span class="status" id="setStatus" role="status"></span>
@@ -447,7 +443,7 @@ label.field{display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:
 <section aria-labelledby="setDataH">
 <h2 id="setDataH">Your data</h2>
 <div class="panel set-block">
-<p>Everything is saved on this device only. Download a backup now and then, and use it to move your tracker to a new phone or browser.</p>
+<p>Saved on this device only. Download a backup to keep it safe or move it.</p>
 <div class="row-actions">
 <button class="primary" type="button" id="exportBtn">Download a backup</button>
 <button type="button" id="importBtn">Restore a backup</button>
@@ -648,8 +644,8 @@ function stepList(g){
     const child=subOf(s),done=stepDone(s),cid='st-'+g.id+'-'+k;
     const cb=el('input',{type:'checkbox',id:cid});cb.checked=done;
     let meta=null;
-    if(child){cb.disabled=true;const cs=stepsOf(child);meta=el('span',{cls:'smeta',id:cid+'-m',text:'Its own goal · '+cs.filter(x=>stepDone(x)).length+' of '+cs.length+' steps done · checks off by itself'});cb.setAttribute('aria-describedby',cid+'-m');}
-    else if(s.kind==='skill'){cb.disabled=true;meta=el('span',{cls:'smeta',id:cid+'-m',text:done?'Reached':fmt(eff(s.skill))+' of '+fmt(skillTarget(s))+' XP · checks off by itself'});cb.setAttribute('aria-describedby',cid+'-m');}
+    if(child){cb.disabled=true;const cs=stepsOf(child);meta=el('span',{cls:'smeta',id:cid+'-m',text:cs.filter(x=>stepDone(x)).length+' of '+cs.length+' steps done'});cb.setAttribute('aria-describedby',cid+'-m');}
+    else if(s.kind==='skill'){cb.disabled=true;meta=el('span',{cls:'smeta',id:cid+'-m',text:done?'Reached':fmt(eff(s.skill))+' of '+fmt(skillTarget(s))+' XP'});cb.setAttribute('aria-describedby',cid+'-m');}
     else cb.addEventListener('change',()=>{const next=steps.map((x,j)=>j===k?Object.assign({},x,{done:cb.checked,doneAt:cb.checked?Date.now():null}):x);saveSteps(g,next);});
     const acts=el('span',{cls:'sacts'});
     if(child)acts.append(el('button',{cls:'link show',type:'button',text:'Go to goal',onclick:()=>jumpToGoal(child.id)}));
@@ -735,8 +731,7 @@ function renderRec(){
   box.append(
     el('div',{cls:'rec-top'},[el('span',{cls:'dot',style:'background:var(--l'+(tier(eff(top.n))+1)+')'}),el('span',{cls:'rec-name',text:top.n}),el('span',{cls:'rec-lv',text:'Level '+(tier(eff(top.n))+1)+', '+TIERS[tier(eff(top.n))][1]})]),
     el('ul',{cls:'rec-why'},top.why.slice(0,4).map(w=>el('li',{text:w}))),
-    list.length>1?el('p',{cls:'rec-alt',text:'Also worth time: '+list.slice(1,3).map(x=>x.n).join(' and ')+'.'}):null,
-    el('p',{cls:'note',text:'Every skill is considered, using your last 14 days: skills you haven\'t touched and skills with fewer hours rank higher (ties between untouched skills rotate day to day), and how your recent sessions felt counts the most. Frustrating pushes a skill down hard. Disappointing and Satisfying nudge it by the same small amount in opposite directions, and Neutral does nothing. Exciting counts a little more, and if at least half your rated hours on a skill in your latest day with it were Exciting (with none Frustrating), within the last two days, it gets a big boost to keep the flow going. If at least half your rated hours on your latest rated day were Frustrating, skills that have felt Satisfying or better in the same 14 days get a big boost for the next two days. Each day\'s ratings for a skill combine into one, weighted by hours, and your latest day weighs more than older ones. It updates as you log.'})
+    list.length>1?el('p',{cls:'rec-alt',text:'Also worth time: '+list.slice(1,3).map(x=>x.n).join(' and ')+'.'}):null
   );
 }
 let LP={skill:null,level:null,date:''};
@@ -815,8 +810,8 @@ function renderPace(){
   tops.forEach(g=>{
     const leaves=treeSteps(g);const tasksLeft=leaves.filter(s=>s.kind!=='skill'&&!s.done).length;
     const open=goalRows(g,P).filter(r=>r.need);
-    const tasksNote=el('p',{cls:'why',style:'margin:.5rem 0 0',text:tasksLeft?tasksLeft+' other step'+(tasksLeft>1?'s':'')+' to check off on the Goals tab, including steps of goals made from its steps. Those depend on what you finish, not on hours, so they aren\'t timed here.':'No other steps left.'});
-    if(!open.length){box.append(el('article',{cls:'panel goal'},[el('h3',{text:g.name}),el('p',{cls:'why',style:'margin:.5rem 0 0',text:'No skill levels left to reach for this goal.'}),tasksNote]));return;}
+    const tasksNote=el('p',{cls:'why',style:'margin:.5rem 0 0',text:tasksLeft?tasksLeft+' more step'+(tasksLeft>1?'s':'')+' on the Goals tab.':''});
+    if(!open.length){box.append(el('article',{cls:'panel goal'},[el('h3',{text:g.name}),el('p',{cls:'why',style:'margin:.5rem 0 0',text:'No skill levels to reach.'}),tasksNote]));return;}
     const worst=open.reduce((a,b)=>b.weeks>a.weeks?b:a);
     const aimWeeks=g.aim?Math.max(.5,(parseDay(g.aim)-new Date())/WEEK_MS):null;
     const req=el('div',{cls:'req req3'},[el('div',{cls:'h',text:'Skill level'}),el('div',{cls:'h',text:'Your pace'}),el('div',{cls:'h',text:aimWeeks?'Needed for your date':'Ready by'})]);
@@ -836,11 +831,11 @@ function renderPace(){
         el('div',{cls:'stat'},[el('div',{cls:'n',text:isFinite(worst.weeks)?mon(addWeeks(worst.weeks)):'On hold'}),el('div',{cls:'l',text:'Skill levels reached, at this pace'})])
       ]),
       req,
-      el('label',{cls:'aim',for:'aim-'+g.id},[document.createTextNode('Aim for a date'),aim,el('span',{text:g.aim?'Red means your pace is below what that date needs.':'to see how much time a week each skill needs.'})]),
+      el('label',{cls:'aim',for:'aim-'+g.id},[document.createTextNode('Aim for a date'),aim]),
       tasksNote
     ]));
   });
-  $('paceNote').textContent='Pace is the time you logged for each skill over the last 7 days, including today. A skill with nothing logged shows "Not moving".';
+  
 }
 
 // ---------- logging ----------
@@ -1011,7 +1006,7 @@ function renderPlan(){
     if(s.kind==='skill'){
       const ss=skillSelect(s.skill,'pls-'+i);ss.setAttribute('aria-label','Skill');ss.onchange=()=>{s.skill=ss.value;renderPlan();};
       const inp=el('input',{type:'number',min:'1',max:'10',step:'1',id:'plv-'+i,'aria-label':'Level to reach in '+s.skill});inp.value=s.level;inp.oninput=()=>{s.level=Number(inp.value);};
-      box.append(el('div',{cls:'lp-skill'},[el('span',{},[document.createTextNode('Reach level in '),ss,el('span',{cls:'smeta',text:'Now Level '+(tier(eff(s.skill))+1)+'. Checks itself off.'})]),inp,rm]));
+      box.append(el('div',{cls:'lp-skill'},[el('span',{},[document.createTextNode('Reach level in '),ss,el('span',{cls:'smeta',text:'Now Level '+(tier(eff(s.skill))+1)})]),inp,rm]));
     }else{
       const inp=el('input',{type:'text',id:'pst-'+i,'aria-label':'Step '+(i+1)});inp.value=s.text;inp.oninput=()=>{s.text=inp.value;};
       box.append(el('div',{cls:'plan-row plan-task'},[inp,rm]));
