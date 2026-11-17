@@ -1,6 +1,6 @@
 # Skill Tracker
 
-What you can do
+What you can do:
 1. See a visual chart of the development of your skills.
 2. Log skill development daily.
 3. Decide what skill to work on today.
