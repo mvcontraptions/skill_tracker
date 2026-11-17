@@ -53,9 +53,10 @@ label.field{display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:
 .status.err{color:var(--bad)}
 .log-grid{display:grid;grid-template-columns:minmax(0,1fr) 11rem;gap:1rem;align-items:start}
 .draft{display:flex;flex-direction:column;gap:.5rem;margin-top:1rem}
-.draft-row{display:grid;grid-template-columns:minmax(0,12rem) 6rem 9.5rem minmax(0,1fr) auto;gap:.5rem;align-items:center}
+.draft-row{display:grid;grid-template-columns:minmax(0,14rem) 6rem minmax(0,12rem) auto;gap:.5rem;align-items:center}
+.draft-row>.link{justify-self:start}
 .draft-sum{font-size:.9rem;color:var(--ink-2);white-space:pre-wrap}
-.draft-head{font-size:.75rem;color:var(--ink-3);display:grid;grid-template-columns:minmax(0,12rem) 6rem 9.5rem minmax(0,1fr) auto;gap:.5rem}
+.draft-head{font-size:.75rem;color:var(--ink-3);display:grid;grid-template-columns:minmax(0,14rem) 6rem minmax(0,12rem) auto;gap:.5rem}
 .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1rem}
 .stat-row{display:flex;gap:1.75rem;flex-wrap:wrap;margin-bottom:1rem}
 .stat .n{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:1.5rem;font-weight:500;font-variant-numeric:tabular-nums;line-height:1.1}
@@ -112,7 +113,6 @@ label.field{display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:
  .draft-head{display:none}
  .draft-row{grid-template-columns:minmax(0,1fr) 5.5rem auto}
  .draft-row .dmood{grid-column:1/-1;grid-row:2}
- .draft-row .dnote{grid-column:1/-1;grid-row:3}
  .draft-row .dmood:empty{display:none}
  .srow{grid-template-columns:minmax(0,1fr) 5rem}.srow .bar{grid-column:1/-1;grid-row:2}
  .req{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr)}.req .hide{display:none}
@@ -411,7 +411,7 @@ label.field{display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:
 </div>
 <div class="draft" id="draft">
 <p class="draft-sum" id="draftSum"></p>
-<div class="draft-head"><span>Skill</span><span>Hours</span><span>How it felt</span><span>Detail</span><span></span></div>
+<div class="draft-head"><span>Skill</span><span>Hours</span><span>How it felt</span><span></span></div>
 <div id="draftRows" class="draft"></div>
 <div class="row-actions">
 <button class="primary" id="saveBtn" type="button">Save entry</button>
@@ -850,10 +850,9 @@ function renderDraft(){
   draft.forEach((it,k)=>{
     const s=skillSelect(it.skill,'dskill-'+k);s.setAttribute('aria-label','Skill');s.onchange=()=>{it.skill=s.value;};
     const h=el('input',{type:'number',min:'0',step:'0.25',id:'dhours-'+k,'aria-label':'Hours'});h.value=it.hours;h.oninput=()=>{it.hours=h.value;};
-    const nt=el('input',{type:'text',id:'dnote-'+k,cls:'dnote','aria-label':'Detail',placeholder:'Detail'});nt.value=it.note||'';nt.oninput=()=>{it.note=nt.value;};
     let mood=el('span',{cls:'dmood'});
     if(it.manual){mood=el('select',{id:'dmood-'+k,cls:'dmood','aria-label':'How it felt'});[['','How it felt'],...MOODS.map((m,j)=>[String(j+1),m])].forEach(([v,t])=>{const o=el('option',{value:v,text:t});if(String(it.mood||'')===v)o.selected=true;mood.append(o);});mood.onchange=()=>{it.mood=mood.value?Number(mood.value):null;};}
-    box.append(el('div',{cls:'draft-row'},[s,h,mood,nt,el('button',{cls:'link',type:'button','aria-label':'Remove',text:'Remove',onclick:()=>{draft.splice(k,1);renderDraft();}})]));
+    box.append(el('div',{cls:'draft-row'},[s,h,mood,el('button',{cls:'link',type:'button','aria-label':'Remove',text:'Remove',onclick:()=>{draft.splice(k,1);renderDraft();}})]));
   });
 }
 function setStatus(id,msg,err){const s=$(id);s.textContent=msg||'';s.classList.toggle('err',!!err);}
