@@ -257,9 +257,7 @@ label.field{display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:
 <div class="lvlup" id="lvlBanner" role="status" hidden></div>
 <p class="notice" id="loadNote">Loading your data…</p>
 <section class="panel" id="setup" aria-labelledby="setupH" hidden>
-<h2 id="setupH">Set up your skill tracker</h2>
-<p class="sub" style="margin-top:0">Add the skills you want to track and roughly how many hours you've put in so far.</p>
-<label class="field" for="suBirth" style="margin-top:1rem;max-width:14rem">Year you were born (optional, shows your age on the chart)<input type="number" id="suBirth" min="1900" max="2100" inputmode="numeric"></label>
+<h2 id="setupH">What do you want to track?</h2>
 <div class="setup-list" id="suList"></div>
 <div class="su-add"><input type="text" id="suNew" placeholder="Skill name" aria-label="New skill name"><button type="button" id="suAdd">Add</button></div>
 <div class="row-actions" style="margin-top:1.25rem">
@@ -1088,11 +1086,10 @@ const SUGGESTED=Object.keys(DESC);
 let suSkills=[];
 function renderSetup(){
   const box=$('suList');box.replaceChildren();
-  if(!suSkills.length)box.append(el('p',{cls:'empty',style:'margin:.25rem 0 0',text:'No skills yet. Add the first one below.'}));
   suSkills.forEach((x,k)=>{
     const cb=el('input',{type:'checkbox',id:'su-'+k});cb.checked=x.on;
     const h=el('input',{type:'number',min:'0',step:'1',inputmode:'decimal',id:'suh-'+k,'aria-label':'Hours so far in '+x.name,placeholder:'0'});h.value=x.hours;h.oninput=()=>{x.hours=h.value;};
-    const row=el('div',{cls:'su-row'+(x.on?'':' off')},[cb,el('label',{for:'su-'+k},[el('span',{text:x.name}),DESC[x.name]?el('span',{cls:'su-desc',text:DESC[x.name]}):null]),el('span',{cls:'su-hours'},[h,document.createTextNode('hrs')])]);
+    const row=el('div',{cls:'su-row'+(x.on?'':' off')},[cb,el('label',{for:'su-'+k},[el('span',{text:x.name}),DESC[x.name]?el('span',{cls:'su-desc',text:DESC[x.name]}):null]),el('span',{cls:'su-hours'},[h,document.createTextNode('hours so far')])]);
     cb.onchange=()=>{x.on=cb.checked;row.classList.toggle('off',!x.on);if(x.on)h.focus();};
     box.append(row);
   });
@@ -1103,13 +1100,13 @@ $('suNew').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault()
 $('suStart').onclick=async()=>{
   const picked=suSkills.filter(x=>x.on);
   if(!picked.length){setStatus('suStatus','Pick at least one skill.',true);return;}
-  const y=new Date().getFullYear(),by=Number($('suBirth').value);
+  const y=new Date().getFullYear(),by=0;
   const skills={},last={};picked.forEach(x=>{skills[x.name]=[Math.max(0,Math.round(Number(x.hours)||0))];last[x.name]=y;});
   try{await db.doc('config/baseline').set({asOf:today(),birthYear:by>1900&&by<=y?by:null,years:[y],skills,last,xpPerHour:{},noRec:[]});askPersist();sel=picked[0].name;freshDraft();showTab('log');}
   catch(e){setStatus('suStatus','Couldn\'t save on this device. Check that the browser allows site storage.',true);}
 };
 function showSetup(on){
-  $('setup').hidden=!on;document.querySelector('.tabs').hidden=on;
+  $('setup').hidden=!on;document.querySelector('.tabs').hidden=on;document.querySelector('.totals').hidden=on;
   document.querySelectorAll('.tab-panel').forEach(p=>{if(on)p.hidden=true;});
   if(!on)showTab((location.hash||'').slice(1)||'skills');
   if(on)renderSetup();
