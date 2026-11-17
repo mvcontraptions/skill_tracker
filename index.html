@@ -370,7 +370,7 @@ label.field{display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:
 <div class="lp-controls">
 <label class="field" for="lpSkill">Skill<select id="lpSkill"></select></label>
 <label class="field" for="lpLevel">Level to reach<select id="lpLevel"></select></label>
-<label class="field" for="lpDate">By (optional)<input type="date" id="lpDate"></label>
+<label class="field" for="lpDate">By<input type="date" id="lpDate"></label>
 </div>
 <div class="lp-out" id="lpOut" aria-live="polite"></div>
 </div>
@@ -393,7 +393,7 @@ label.field{display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:
 <h2 id="logH">Log your work</h2>
 <div class="panel">
 <div class="log-grid">
-<label class="field" for="logText">What did you work on? (optional note)
+<label class="field" for="logText">What did you work on?
 <textarea id="logText" placeholder="What you did, in your own words."></textarea>
 </label>
 <label class="field" for="logDate">Day
@@ -401,7 +401,7 @@ label.field{display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:
 </label>
 </div>
 <div class="log-proj">
-<label class="field" for="logProject">Project (optional)
+<label class="field" for="logProject">Project
 <select id="logProject"><option value="">None</option></select>
 </label>
 <label class="field" for="logPct" id="logPctWrap" hidden>How close to done?
@@ -411,7 +411,7 @@ label.field{display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:
 </div>
 <div class="draft" id="draft">
 <p class="draft-sum" id="draftSum"></p>
-<div class="draft-head"><span>Skill</span><span>Hours</span><span>How it felt</span><span>Detail (optional)</span><span></span></div>
+<div class="draft-head"><span>Skill</span><span>Hours</span><span>How it felt</span><span>Detail</span><span></span></div>
 <div id="draftRows" class="draft"></div>
 <div class="row-actions">
 <button class="primary" id="saveBtn" type="button">Save entry</button>
@@ -435,7 +435,7 @@ label.field{display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:
 <section aria-labelledby="setYouH">
 <h2 id="setYouH">You</h2>
 <div class="panel">
-<label class="field" for="setBirth" style="max-width:14rem">Year you were born (optional)<input type="number" id="setBirth" min="1900" max="2100" inputmode="numeric"></label>
+<label class="field" for="setBirth" style="max-width:14rem">Year you were born<input type="number" id="setBirth" min="1900" max="2100" inputmode="numeric"></label>
 </div>
 </section>
 <section aria-labelledby="setDataH">
@@ -850,9 +850,9 @@ function renderDraft(){
   draft.forEach((it,k)=>{
     const s=skillSelect(it.skill,'dskill-'+k);s.setAttribute('aria-label','Skill');s.onchange=()=>{it.skill=s.value;};
     const h=el('input',{type:'number',min:'0',step:'0.25',id:'dhours-'+k,'aria-label':'Hours'});h.value=it.hours;h.oninput=()=>{it.hours=h.value;};
-    const nt=el('input',{type:'text',id:'dnote-'+k,cls:'dnote','aria-label':'Detail (optional)',placeholder:'Detail (optional)'});nt.value=it.note||'';nt.oninput=()=>{it.note=nt.value;};
+    const nt=el('input',{type:'text',id:'dnote-'+k,cls:'dnote','aria-label':'Detail',placeholder:'Detail'});nt.value=it.note||'';nt.oninput=()=>{it.note=nt.value;};
     let mood=el('span',{cls:'dmood'});
-    if(it.manual){mood=el('select',{id:'dmood-'+k,cls:'dmood','aria-label':'How it felt (optional)'});[['','How it felt (optional)'],...MOODS.map((m,j)=>[String(j+1),m])].forEach(([v,t])=>{const o=el('option',{value:v,text:t});if(String(it.mood||'')===v)o.selected=true;mood.append(o);});mood.onchange=()=>{it.mood=mood.value?Number(mood.value):null;};}
+    if(it.manual){mood=el('select',{id:'dmood-'+k,cls:'dmood','aria-label':'How it felt'});[['','How it felt'],...MOODS.map((m,j)=>[String(j+1),m])].forEach(([v,t])=>{const o=el('option',{value:v,text:t});if(String(it.mood||'')===v)o.selected=true;mood.append(o);});mood.onchange=()=>{it.mood=mood.value?Number(mood.value):null;};}
     box.append(el('div',{cls:'draft-row'},[s,h,mood,nt,el('button',{cls:'link',type:'button','aria-label':'Remove',text:'Remove',onclick:()=>{draft.splice(k,1);renderDraft();}})]));
   });
 }
